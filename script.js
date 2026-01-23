@@ -254,27 +254,33 @@ async function doSearch(studentId) {
           }
           // Fetch from server
           try {
-            // Build absolute path relative to the current page to avoid issues with subdirectories
-            const baseUrl = window.location.href.split('?')[0].split('#')[0];
-            const baseDir = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
-            
-            const parts = fileInfo.name.split('/');
-            // Try fetching with raw name first (many modern servers handle this better)
-            let response;
-            try {
-              response = await fetch(baseDir + fileInfo.name);
-            } catch(e) {
-              // Fallback to encoded name if raw fails
-              const encodedName = parts[0] + '/' + encodeURIComponent(parts[1]);
-              response = await fetch(baseDir + encodedName);
+            // Build absolute path relative to current location
+            const baseUrl = new URL('./', window.location.href).href;
+            const fileName = fileInfo.name.split('/').pop();
+            const folderName = fileInfo.name.split('/')[0];
+
+            // Strategy 1: Direct path (works on most modern servers)
+            // Strategy 2: Encoded segments (Standard for web servers)
+            // Strategy 3: Encoded full URI
+            const tryUrls = [
+              baseUrl + fileInfo.name,
+              baseUrl + folderName + '/' + encodeURIComponent(fileName),
+              encodeURI(baseUrl + fileInfo.name)
+            ];
+
+            let response = null;
+            for (const targetUrl of tryUrls) {
+              try {
+                const r = await fetch(targetUrl);
+                if (r.ok) {
+                  response = r;
+                  break;
+                }
+              } catch (e) { continue; }
             }
 
-            if (!response.ok) {
-              // One last try: just the filename if it's in the same folder as index.html
-              const encodedFallback = encodeURIComponent(parts[1]);
-              const response2 = await fetch(baseDir + encodedFallback);
-              if (!response2.ok) throw new Error(`File not found: ${fileInfo.name}`);
-              response = response2;
+            if (!response || !response.ok) {
+              throw new Error(`تعذر الوصول للملف: ${fileName}. تأكد من صحة المسار وإعدادات السيرفر (MIME Types).`);
             }
             
             const data = await response.arrayBuffer();
