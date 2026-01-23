@@ -103,27 +103,16 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_READY_FOR_TEST");
+console.log("System Loaded: v20260123_ULTRA_STABLE");
 
 const SERVER_FILES = [
-  // القائمة الأصلية المؤكدة
+  // المحاولة بالأرقام (الحل الأضمن لتجنب مشاكل اللغة العربية في الروابط)
+  'xls/1.xls', 'xls/2.xls', 'xls/3.xls', 'xls/4.xls', 'xls/5.xls', 'xls/6.xls',
+  'xls/1.xlsx', 'xls/2.xlsx', 'xls/3.xlsx', 'xls/4.xlsx', 'xls/5.xlsx', 'xls/6.xlsx',
+  // المحاولة بالأسماء الأصلية (كاحتياط)
   'xls/قسم الحاسوب25-26.xls', 'xls/قسم الطاقة25-26.xls', 'xls/قسم الكهرباء25-26.xls',
   'xls/قسم المحاسبة25-26.xls', 'xls/قسم المساحة25-26.xls', 'xls/قسم الميكانيكا 25-26.xls'
 ];
-
-// إضافة احتمالات أخرى تلقائياً (لضمان تغطية الأخطاء الإملائية في الأسماء)
-const _DEPTS = ['قسم الحاسوب', 'قسم الطاقة', 'قسم الكهرباء', 'قسم المحاسبة', 'قسم المساحة', 'قسم الميكانيكا'];
-_DEPTS.forEach(d => {
-  SERVER_FILES.push(`xls/${d}25-26.xls`);
-  SERVER_FILES.push(`xls/${d} 25-26.xls`);
-  SERVER_FILES.push(`xls/${d}25-26.xlsx`);
-  SERVER_FILES.push(`xls/${d} 25-26.xlsx`);
-});
-
-// إزالة التكرار من القائمة لتجنب طلب نفس الملف مرتين من الخادم
-const _uniqueFiles = [...new Set(SERVER_FILES)];
-SERVER_FILES.length = 0;
-SERVER_FILES.push(..._uniqueFiles);
 
 function clearCache() {
   window.__workbookCache.clear();
@@ -305,7 +294,8 @@ async function doSearch(studentId) {
           // Fetch from server
           try {
             const fileNameOnly = fileInfo.name.split('/').pop();
-            const folderPrefixes = ['xls/', 'XLS/', './xls/']; // إزالة المسار الخاطئ ('') لضمان البحث في مجلد xls فقط
+            // جرب المسارات النسبية أولاً لتجنب مشاكل النطاق (Base URL)
+            const folderPrefixes = ['xls/', './xls/', 'XLS/', '']; 
             
             let response = null;
             let lastStatus = 0;
@@ -315,30 +305,29 @@ async function doSearch(studentId) {
             const nameVariants = [
               fileNameOnly,
               encodeURIComponent(fileNameOnly),
-              fileNameOnly.normalize('NFC'), // الصيغة القياسية في ويندوز والويب
+              fileNameOnly.normalize('NFC'),
               encodeURIComponent(fileNameOnly.normalize('NFC')),
-              fileNameOnly.normalize('NFD')  // الصيغة المفككة (شائعة في Mac/Linux)
+              fileNameOnly.normalize('NFD')
             ];
-            const uniqueNames = [...new Set(nameVariants)]; // إزالة التكرار
+            const uniqueNames = [...new Set(nameVariants)];
 
-            for (const prefix of folderPrefixes) {
+            outerLoop: for (const prefix of folderPrefixes) {
               for (const variant of uniqueNames) {
                 const p = prefix + variant;
                 lastUrlTried = p;
                 try {
-                  const r = await fetch(p);
+                  // إضافة cache: 'no-store' لضمان عدم تحميل صفحة 404 مخزنة
+                  const r = await fetch(p, { cache: 'no-store' });
                   lastStatus = r.status;
                   if (r.ok) {
-                    // التأكد أن الاستجابة ليست صفحة HTML (خطأ 404 مقنع)
                     const cType = r.headers.get("content-type");
                     if (cType && cType.includes("text/html")) continue;
                     
                     response = r;
-                    break;
+                    break outerLoop;
                   }
                 } catch (e) { continue; }
               }
-              if (response) break;
             }
 
             if (!response || !response.ok) {
