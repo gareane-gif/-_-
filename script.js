@@ -269,18 +269,44 @@ async function doSearch(studentId) {
             ];
 
             let response = null;
+            let lastUrlTried = "";
+            let lastStatus = 0;
+
             for (const targetUrl of tryUrls) {
+              lastUrlTried = targetUrl;
               try {
                 const r = await fetch(targetUrl);
+                lastStatus = r.status;
                 if (r.ok) {
                   response = r;
                   break;
                 }
-              } catch (e) { continue; }
+              } catch (e) { 
+                console.warn("Fetch attempt failed for:", targetUrl, e);
+                continue; 
+              }
             }
 
             if (!response || !response.ok) {
-              throw new Error(`تعذر الوصول للملف: ${fileName}. تأكد من صحة المسار وإعدادات السيرفر (MIME Types).`);
+              // Final fallback: try just the filename in the root
+              try {
+                const rootUrl = baseUrl + fileName;
+                const r2 = await fetch(rootUrl);
+                if (r2.ok) response = r2;
+              } catch(e) {}
+            }
+
+            if (!response || !response.ok) {
+              const details = `
+                <div style="margin-top:10px; padding:10px; background:#fff; border:1px solid #ddd; font-family:monospace; font-size:0.75rem; text-align:left; direction:ltr;">
+                  <b>Diagnostic Info:</b><br>
+                  File: ${fileName}<br>
+                  Status: ${lastStatus}<br>
+                  Tried URL: ${lastUrlTried}<br>
+                  Protocol: ${window.location.protocol}
+                </div>
+              `;
+              throw new Error(`تعذر الوصول للملف: ${fileName}. (خطأ: ${lastStatus})${details}`);
             }
             
             const data = await response.arrayBuffer();
