@@ -123,7 +123,7 @@ function checkLogin() {
     loginAs('student', user);
   } else {
     errorEl.style.display = 'block';
-    alert('خطأ: اسم المستخدم أو كلمة السر غير صحيحة.');
+    alert('خطأ: اسم مستخدم أو كلمة سر غير صحيحة.');
   }
 }
 
@@ -179,7 +179,7 @@ if (!window.__searchListenerAttached) {
   document.getElementById('searchBtn').addEventListener('click', function () {
     const studentId = document.getElementById('studentId').value.trim();
     if (!studentId) {
-      alert('يرجى إدخال الرقم الدراسي.');
+      alert('يرجى إدخال رقم دراسي.');
       return;
     }
     doSearch(studentId);
@@ -237,6 +237,7 @@ async function doSearch(studentId) {
   let sheetNameText = null;
   let foundWorkbook = null;
   let scannedFilesCount = 0;
+  let fetchErrors = [];
 
   try {
     for (let fileInfo of filesToProcess) {
@@ -254,14 +255,10 @@ async function doSearch(studentId) {
           }
           // Fetch from server
           try {
-            // Build absolute path relative to current location
             const baseUrl = new URL('./', window.location.href).href;
             const fileName = fileInfo.name.split('/').pop();
             const folderName = fileInfo.name.split('/')[0];
 
-            // Strategy 1: Direct path (works on most modern servers)
-            // Strategy 2: Encoded segments (Standard for web servers)
-            // Strategy 3: Encoded full URI
             const tryUrls = [
               baseUrl + fileInfo.name,
               baseUrl + folderName + '/' + encodeURIComponent(fileName),
@@ -281,39 +278,19 @@ async function doSearch(studentId) {
                   response = r;
                   break;
                 }
-              } catch (e) { 
-                console.warn("Fetch attempt failed for:", targetUrl, e);
-                continue; 
-              }
+              } catch (e) { continue; }
             }
 
             if (!response || !response.ok) {
-              // Final fallback: try just the filename in the root
-              try {
-                const rootUrl = baseUrl + fileName;
-                const r2 = await fetch(rootUrl);
-                if (r2.ok) response = r2;
-              } catch(e) {}
-            }
-
-            if (!response || !response.ok) {
-              const details = `
-                <div style="margin-top:10px; padding:10px; background:#fff; border:1px solid #ddd; font-family:monospace; font-size:0.75rem; text-align:left; direction:ltr;">
-                  <b>Diagnostic Info:</b><br>
-                  File: ${fileName}<br>
-                  Status: ${lastStatus}<br>
-                  Tried URL: ${lastUrlTried}<br>
-                  Protocol: ${window.location.protocol}
-                </div>
-              `;
-              throw new Error(`تعذر الوصول للملف: ${fileName}. (خطأ: ${lastStatus})${details}`);
+              fetchErrors.push({ file: fileName, status: lastStatus, url: lastUrlTried });
+              continue; 
             }
             
             const data = await response.arrayBuffer();
             workbook = XLSX.read(new Uint8Array(data), { type: 'array', raw: true });
             window.__workbookCache.set(cacheKey, workbook);
           } catch (fetchErr) {
-            console.warn(`Could not load server file: ${fileInfo.name}`, fetchErr);
+            fetchErrors.push({ file: fileInfo.name, error: fetchErr.message });
             continue;
           }
         } else {
@@ -427,10 +404,15 @@ async function doSearch(studentId) {
         if (window.location.protocol === 'file:') {
           resultDiv.innerHTML = `<p style="color:red; text-align:center;">تعذر تحميل الملفات تلقائياً لأنك قمت بفتح المنظومة كملف محلي.<br>يرجى تشغيل المنظومة عبر خادم (Server) أو استخدام زر "رفع الملفات" في واجهة الإدارة.</p>`;
         } else {
+          let diagInfo = fetchErrors.map(e => `File: ${e.file} | Status: ${e.status || 'Error'} | URL: ${e.url || e.error}`).join('<br>');
           resultDiv.innerHTML = `
             <div style="color:red; text-align:center; padding: 20px; border: 1px solid #ffccd5; background: #fff5f6; border-radius: 8px;">
               <p style="font-weight:bold; margin-bottom:10px;">تعذر الوصول إلى ملفات النتائج على الخادم.</p>
               <p style="font-size: 0.85rem; color: #666;">يرجى التأكد من رفع مجلد (xls) الذي يحتوي على ملفات الإكسل بجانب ملف index.html.</p>
+              <div style="margin-top:15px; padding:10px; background:#fff; border:1px solid #ddd; font-family:monospace; font-size:0.7rem; text-align:left; direction:ltr; overflow-x:auto;">
+                <b>Diagnostic Info (All attempts failed):</b><br>
+                ${diagInfo || 'No files reached.'}
+              </div>
             </div>
           `;
         }
