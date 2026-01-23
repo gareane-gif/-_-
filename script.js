@@ -96,7 +96,8 @@ function pickName(rowData, idColIdx, nameColIdx) {
 }
 
 window.__currentUser = null;
-window.__workbookCache = new Map(); // Cache for workbooks to avoid re-reading files
+window.__workbookCache = new Map(); 
+console.log("System Loaded: v20260123_FIX_DIAG");
 
 const SERVER_FILES = [
   'xls/قسم الحاسوب25-26.xls',
@@ -165,6 +166,13 @@ function logout() {
   document.getElementById('username').value = '';
   document.getElementById('password').value = '';
   document.getElementById('loginError').style.display = 'none';
+  const uploadStatus = document.getElementById('uploadStatus');
+  if (uploadStatus) {
+    uploadStatus.textContent = '';
+    uploadStatus.style.display = 'none';
+  }
+  const fileInput = document.getElementById('file');
+  if (fileInput) fileInput.value = ''; // Reset file input on logout
 }
 
 if (!window.__searchListenerAttached) {
@@ -172,7 +180,22 @@ if (!window.__searchListenerAttached) {
   document.getElementById('loginBtn').addEventListener('click', checkLogin);
   document.getElementById('logoutBtn').addEventListener('click', logout);
   const fileInput = document.getElementById('file');
-  if (fileInput) fileInput.addEventListener('change', clearCache);
+  const uploadStatus = document.getElementById('uploadStatus');
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      clearCache();
+      const count = this.files.length;
+      if (count > 0) {
+        if (uploadStatus) {
+          uploadStatus.textContent = `✅ تم رفع ${count} ملفات بنجاح. المنظومة جاهزة للبحث الآن.`;
+          uploadStatus.style.display = 'block';
+        }
+        alert(`تم رفع ${count} ملفات بنجاح. المنظومة جاهزة للبحث الآن.`);
+      } else {
+        if (uploadStatus) uploadStatus.style.display = 'none';
+      }
+    });
+  }
   document.getElementById('password').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') checkLogin();
   });
