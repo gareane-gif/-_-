@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>نتائج الطلاب</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>استعلام عن نتيجة الطالب</h1>
+    <!-- status indicator -->
+    <div id="status" style="text-align:center; font-size:13px; color:#666; margin-bottom:8px;"></div>
+    <div class="upload-section">
+      <label for="file">اختر ملف Excel الخاص بالنتائج:</label>
+      <input type="file" id="file" accept=".xls,.xlsx" />
+    </div>
+
+    <div class="input-section">
+      <label for="studentId">أدخل الرقم الدراسي (رقم القيد):</label>
+      <input type="text" id="studentId" placeholder="مثال: AC231099" />
+      <button id="searchBtn" onclick="alert('تجربة: زر البحث تم الضغط عليه في Qwen_html_20260111_yqwrnl1oh.html')">بحث</button>
+      <div style="margin-top:6px; font-size:12px; color:#b00;">أنت الآن تعرض: <strong>Qwen_html_20260111_yqwrnl1oh.html</strong></div>
+    </div>
+
+    <div id="result" class="result-section"></div>
+  </div>
+
+  <script src="script.js?v=3"></script>
+</body>
+</html>

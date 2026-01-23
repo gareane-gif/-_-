@@ -1,0 +1,4 @@
+نتائج_الطلاب/
+├── index.html
+├── style.css
+└── script.js

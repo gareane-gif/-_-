@@ -1,0 +1,109 @@
+[
+  {
+    "file": "قسم الحاسوب25-26.xls",
+    "sheet": "الاول حاسوب",
+    "header_row_1based": 4,
+    "data_row_1based": 17,
+    "id_col_1based": 4,
+    "id_value": "252002",
+    "subjects": {}
+  },
+  {
+    "file": "قسم الكهرباء25-26.xls",
+    "sheet": "الاول كهرباء",
+    "header_row_1based": 4,
+    "data_row_1based": 17,
+    "id_col_1based": 4,
+    "id_value": "252002",
+    "subjects": {
+      "رياضة1": {
+        "work": "29",
+        "final": "0",
+        "total": "25",
+        "units": "3"
+      },
+      "الفيزياء": {
+        "work": "18",
+        "final": "0",
+        "total": "18",
+        "units": "3"
+      },
+      "اساسيات الحاسب الالي": {
+        "work": "29",
+        "final": "0",
+        "total": "24",
+        "units": "3"
+      },
+      "رسم هندسي 1": {
+        "work": "27",
+        "final": "0",
+        "total": "33",
+        "units": "3"
+      },
+      "أسس هندسة كهربائية": {
+        "work": "29",
+        "final": "0",
+        "total": "27",
+        "units": "3"
+      }
+    }
+  },
+  {
+    "file": "قسم المحاسبة25-26.xls",
+    "sheet": "الاول محاسبة",
+    "header_row_1based": 4,
+    "data_row_1based": 29,
+    "id_col_1based": 4,
+    "id_value": "252002",
+    "subjects": {
+      "رياضة1": {
+        "work": "23",
+        "final": "",
+        "total": "25",
+        "units": "3"
+      },
+      "اساسيات الحاسب آلي": {
+        "work": "30",
+        "final": "",
+        "total": "31",
+        "units": "3"
+      },
+      "مبادئ محاسبة 1": {
+        "work": "22",
+        "final": "0",
+        "total": "25",
+        "units": "3"
+      },
+      "مبادئ اقتصاد": {
+        "work": "35",
+        "final": "",
+        "total": "34",
+        "units": "3"
+      },
+      "مبادئ إدارة اعمال": {
+        "work": "30",
+        "final": "",
+        "total": "29",
+        "units": "3"
+      }
+    }
+  },
+  {
+    "file": "قسم الميكانيكا 25-26.xls",
+    "sheet": "الاول ميكانيكا",
+    "header_row_1based": 4,
+    "data_row_1based": 11,
+    "id_col_1based": 4,
+    "id_value": "252002",
+    "subjects": {}
+  },
+  {
+    "file": "قسم الميكانيكا 25-26.xls",
+    "sheet": "الاول ميكانيكا",
+    "header_row_1based": 4,
+    "data_row_1based": 17,
+    "id_col_1based": 4,
+    "id_value": "252002",
+    "subjects": {}
+  }
+]

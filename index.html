@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نتائج الطلاب</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* ألوان الهوية البصرية للمعهد - يمكنك تغيير كود اللون هنا ليطابق الشعار بدقة */
+      --primary-color: #003366;
+      /* كحلي غامق رسمي */
+      --accent-color: #0056b3;
+      /* أزرق للأزرار */
+      --bg-color: #f4f6f9;
+      /* خلفية الصفحة */
+    }
+
+    body {
+      background-color: var(--bg-color);
+    }
+
+    .container {
+      position: relative;
+      border-top: 6px solid var(--primary-color);
+      /* شريط ملون أعلى النافذة */
+    }
+
+    h1 {
+      color: var(--primary-color);
+    }
+
+    button {
+      background-color: var(--accent-color) !important;
+    }
+
+    button:hover {
+      background-color: var(--primary-color) !important;
+    }
+
+    /* تلوين الصفوف بشكل متبادل (Zebra Striping) */
+    .result-table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    /* تنسيقات الجدول الأساسية */
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 15px;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    .result-table th {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+
+    /* تنسيقات قسم التوقيع والطباعة */
+    .signature-section {
+      display: none;
+      justify-content: center;
+      margin-top: 40px;
+      padding: 0 20px;
+    }
+
+    .sig-block {
+      text-align: center;
+      min-width: 200px;
+    }
+
+    .sig-title {
+      font-weight: bold;
+      margin-bottom: 50px;
+      display: block;
+      font-family: 'Amiri', serif;
+      font-size: 1.1rem;
+    }
+
+    .sig-line {
+      border-top: 1px solid #000;
+      width: 150px;
+      margin: 0 auto;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .print-btn {
+      background-color: #28a745 !important;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .print-btn:hover {
+      background-color: #218838 !important;
+    }
+
+    /* إضافة العلامة المائية */
+    .result-section {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      /* إطار زخرفي للنتيجة */
+      border: 6px double var(--primary-color);
+      padding: 30px;
+      background-color: #fff;
+    }
+
+    .result-section::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 400px;
+      background-image: url('278143110_656758089110417_4349344937401225995_n.png');
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      opacity: 0.08;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* تحسينات للتجاوب مع شاشات الهواتف */
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+        padding: 15px;
+        margin: 10px auto;
+      }
+
+      .header-section {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .header-section h1 {
+        font-size: 1.5rem;
+        margin-top: 10px;
+      }
+
+      .upload-section,
+      .input-section {
+        display: flex;
+        flex-direction: column;
+      }
+
+      input[type="text"],
+      input[type="file"],
+      button {
+        width: 100%;
+        box-sizing: border-box;
+        /* لضمان عدم خروج العنصر عن العرض */
+        margin: 8px 0;
+        padding: 12px;
+        /* تكبير مساحة اللمس */
+        font-size: 16px;
+        /* حجم مناسب للقراءة ويمنع التكبير التلقائي في iOS */
+      }
+
+      button {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+    }
+
+    /* تنسيقات واجهة الدخول */
+    #loginOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--primary-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .login-box {
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 25px;
+      color: var(--primary-color);
+      font-family: 'Amiri', serif;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 20px;
+    }
+
+    .logout-btn {
+      background: #dc3545 !important;
+      font-size: 0.9rem;
+      padding: 8px 15px;
+      margin: 0;
+    }
+
+    #mainApp {
+      display: none;
+    }
+
+    /* تنسيقات خاصة بالطباعة لإخفاء كل شيء ما عدا النتيجة */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0; /* إخفاء رابط الملف والتاريخ (الهيدر والفوتر) بشكل قطعي */
+      }
+
+      body {
+        visibility: hidden;
+        padding: 0;
+        margin: 0;
+        height: auto;
+        overflow: visible !important;
+      }
+
+      .container {
+        visibility: visible;
+        position: relative; 
+        margin: 1.5cm auto !important; /* زيادة الهوامش حسب رغبة المستخدم */
+        width: calc(100% - 3cm); 
+        padding: 30px !important; 
+        box-shadow: none;
+        /* إطار كامل للصفحة عند الطباعة */
+        border: 6px double #003366 !important;
+        height: auto;
+        display: block;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      /* إخفاء عناصر الإدخال والبحث وكل ما ليس له علاقة بالنتيجة عند الطباعة */
+      .upload-section,
+      .input-section,
+      .action-buttons,
+      .debug-div,
+      .logout-btn {
+        display: none !important;
+      }
+
+      /* ضمان ظهور المحتوى المطلوب (الرأس والنتيجة) */
+      .header-section,
+      .header-section *,
+      #result,
+      #result * {
+        visibility: visible;
+      }
+
+      .print-btn {
+        display: none !important;
+      }
+
+      #exportPdfBtn {
+        display: none !important;
+      }
+
+      /* ضمان ظهور الألوان الخلفية عند الطباعة */
+      .result-table tbody tr:nth-child(even) {
+        background-color: #f2f2f2 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* ضمان ظهور العلامة المائية عند الطباعة */
+      .result-section::before {
+        opacity: 0.1 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* إزالة إطار قسم النتيجة الداخلي عند الطباعة لتجنب التكرار */
+      .result-section {
+        border: none !important;
+        padding: 0 !important;
+      }
+
+      /* تحسينات الجدول للطباعة */
+      .result-table th {
+        background-color: #003366 !important;
+        color: white !important;
+        border: 1px solid #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .result-table td {
+        border: 1px solid #000 !important;
+      }
+
+      /* تحسين قسم التوقيع */
+      .signature-section {
+        display: flex !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-top: 30px !important; /* تقليل المسافة العلوية لضمان البقاء في نفس الصفحة */
+      }
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0;">
+  <div id="loginOverlay">
+    <div class="login-box">
+      <h2>دخول المنظومة</h2>
+      <input type="text" id="username" placeholder="اسم المستخدم أو رقم القيد" />
+      <input type="password" id="password" placeholder="كلمة السر" />
+      <button id="loginBtn" onclick="if(typeof checkLogin === 'function') checkLogin();">دخول</button>
+      <p id="loginError" style="color:red; margin-top:15px; display:none;">خطأ في اسم المستخدم أو كلمة السر</p>
+    </div>
+  </div>
+
+  <div id="mainApp" class="container">
+    <div class="header-section">
+      <img src="LOGO.jpg" alt="شعار الوزارة" class="logo">
+      <div style="text-align: center; flex: 1;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px;">
+          <h2
+            style="margin:0; font-size:1.8rem; color:var(--primary-color); font-weight:bold; font-family: 'Amiri', serif;">
+            المعهد العالي للعلوم والتقنية الجفرة بسوكنة</h2>
+        </div>
+        <h1 style="margin:5px 0 0; font-size:1.5rem;">استعلام عن نتيجة طالب</h1>
+      </div>
+      <img src="278143110_656758089110417_4349344937401225995_n.png" alt="شعار المعهد" class="logo">
+    </div>
+
+    <div id="topDate"
+      style="position: absolute; left: 25px; top: 15px; font-size: 1rem; color: #333; font-weight: bold;"></div>
+
+    <div id="adminSections">
+      <div class="upload-section">
+        <label for="file">اختر ملفات Excel الخاصة بالنتائج (يمكنك اختيار عدة ملفات):</label>
+        <input type="file" id="file" accept=".xls,.xlsx" multiple />
+      </div>
+    </div>
+
+    <div class="input-section">
+      <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+        <div id="searchParts" style="flex: 1; min-width: 250px;">
+          <label for="studentId">أدخل الرقم الدراسي (رقم القيد):</label>
+          <div style="display: flex; gap: 10px; align-items: stretch; margin-top: 8px;">
+            <input type="text" id="studentId" placeholder="مثال: AC231099" style="margin: 0; flex: 1;" />
+            <button id="searchBtn" style="margin: 0; white-space: nowrap;">بحث</button>
+          </div>
+        </div>
+        <div id="studentLinkSection" style="display: none; flex: 1; min-width: 250px;">
+          <label>رابط مشاركة المنظومة:</label>
+          <button id="genLinkBtn" style="margin: 8px 0 0; width: 100%; height: 44px; background-color: #28a745 !important; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>توليد رابط المنظومة للطلبة</span>
+          </button>
+        </div>
+        <button id="logoutBtn" class="logout-btn" style="margin: 0; white-space: nowrap; height: 44px; display: flex; align-items: center; justify-content: center;">خروج</button>
+      </div>
+    </div>
+
+    <div id="result" class="result-section"></div>
+  </div>
+
+  <!-- Linked external script with cache buster -->
+  <script src="script.js?v=20260122_v67"></script>
+</body>
+
+</html>

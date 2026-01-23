@@ -1,0 +1,13 @@
+{
+  "name": "natayej",
+  "version": "0.1.0",
+  "description": "Small utilities to search student results in Excel files",
+  "main": "find_student.js",
+  "scripts": {
+    "start": "node find_student.js",
+    "test": "node -v"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
