@@ -20,8 +20,16 @@ function isIdMatch(target, candidate) {
   if (!normTarget || !normCandidate) return false;
   if (normTarget === normCandidate) return true;
 
+  const alphaTarget = normTarget.replace(/[0-9]/g, '');
+  const alphaCandidate = normCandidate.replace(/[0-9]/g, '');
+  
   const numTarget = normTarget.replace(/[^0-9]/g, '');
   const numCandidate = normCandidate.replace(/[^0-9]/g, '');
+
+  // If both have letters, the letters MUST match
+  if (alphaTarget && alphaCandidate && alphaTarget !== alphaCandidate) {
+    return false;
+  }
   
   // If numeric parts match and are significant (e.g. >= 4 digits), consider it a match
   if (numTarget && numCandidate && numTarget === numCandidate && numTarget.length >= 4) {
@@ -219,6 +227,11 @@ async function doSearch(studentId) {
   const originalBtnText = searchBtn.textContent;
   searchBtn.disabled = true;
   searchBtn.textContent = 'جاري البحث...';
+  
+  if (isServerFetch) {
+    resultDiv.innerHTML = `<p style="text-align:center; color: var(--accent-color);">جاري تحميل النتائج من الخادم... يرجى الانتظار</p>`;
+    resultDiv.classList.add('show');
+  }
 
   let foundStudent = null;
   let sheetNameText = null;
@@ -241,10 +254,29 @@ async function doSearch(studentId) {
           }
           // Fetch from server
           try {
+            // Build absolute path relative to the current page to avoid issues with subdirectories
+            const baseUrl = window.location.href.split('?')[0].split('#')[0];
+            const baseDir = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
+            
             const parts = fileInfo.name.split('/');
-            const encodedName = parts[0] + '/' + encodeURIComponent(parts[1]);
-            const response = await fetch(encodedName);
-            if (!response.ok) throw new Error('File not found on server');
+            // Try fetching with raw name first (many modern servers handle this better)
+            let response;
+            try {
+              response = await fetch(baseDir + fileInfo.name);
+            } catch(e) {
+              // Fallback to encoded name if raw fails
+              const encodedName = parts[0] + '/' + encodeURIComponent(parts[1]);
+              response = await fetch(baseDir + encodedName);
+            }
+
+            if (!response.ok) {
+              // One last try: just the filename if it's in the same folder as index.html
+              const encodedFallback = encodeURIComponent(parts[1]);
+              const response2 = await fetch(baseDir + encodedFallback);
+              if (!response2.ok) throw new Error(`File not found: ${fileInfo.name}`);
+              response = response2;
+            }
+            
             const data = await response.arrayBuffer();
             workbook = XLSX.read(new Uint8Array(data), { type: 'array', raw: true });
             window.__workbookCache.set(cacheKey, workbook);
@@ -359,8 +391,17 @@ async function doSearch(studentId) {
   if (foundStudent) {
       displayResult(foundStudent, sheetNameText, foundWorkbook);
     } else {
-      if (scannedFilesCount === 0 && window.location.protocol === 'file:') {
-        resultDiv.innerHTML = `<p style="color:red; text-align:center;">تعذر تحميل الملفات تلقائياً لأنك قمت بفتح المنظومة كملف محلي.<br>يرجى تشغيل المنظومة عبر خادم (Server) أو استخدام زر "رفع الملفات" في واجهة الإدارة.</p>`;
+      if (scannedFilesCount === 0) {
+        if (window.location.protocol === 'file:') {
+          resultDiv.innerHTML = `<p style="color:red; text-align:center;">تعذر تحميل الملفات تلقائياً لأنك قمت بفتح المنظومة كملف محلي.<br>يرجى تشغيل المنظومة عبر خادم (Server) أو استخدام زر "رفع الملفات" في واجهة الإدارة.</p>`;
+        } else {
+          resultDiv.innerHTML = `
+            <div style="color:red; text-align:center; padding: 20px; border: 1px solid #ffccd5; background: #fff5f6; border-radius: 8px;">
+              <p style="font-weight:bold; margin-bottom:10px;">تعذر الوصول إلى ملفات النتائج على الخادم.</p>
+              <p style="font-size: 0.85rem; color: #666;">يرجى التأكد من رفع مجلد (xls) الذي يحتوي على ملفات الإكسل بجانب ملف index.html.</p>
+            </div>
+          `;
+        }
       } else {
         resultDiv.innerHTML = `<p style="color:red; text-align:center;">لم يتم العثور على طالب برقم القيد: ${studentId}</p>
                                <p style="text-align:center; font-size:smaller; color:#666;">(تم البحث في ${scannedFilesCount} ملفات)</p>`;

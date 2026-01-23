@@ -149,42 +149,71 @@
     @media (max-width: 768px) {
       .container {
         width: 95%;
-        padding: 15px;
+        padding: 15px !important;
         margin: 10px auto;
       }
 
       .header-section {
-        flex-direction: column;
-        text-align: center;
+        flex-direction: row; /* Keep logos on sides but smaller */
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .logo {
+        width: 50px !important;
+        height: 50px !important;
+      }
+
+      .header-section h2 {
+        font-size: 1.1rem !important;
       }
 
       .header-section h1 {
-        font-size: 1.5rem;
-        margin-top: 10px;
+        font-size: 1.2rem !important;
+        margin-top: 5px !important;
       }
 
-      .upload-section,
-      .input-section {
-        display: flex;
-        flex-direction: column;
+      /* Fix Search Box and Button */
+      .input-section > div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      #searchParts {
+        min-width: 100% !important;
+      }
+
+      #searchParts > div {
+        display: flex !important;
+        flex-direction: row !important; /* Keep input and search button in one line */
+        gap: 5px !important;
+      }
+
+      #studentId {
+        flex: 1 !important;
+        width: auto !important;
+        margin: 0 !important;
+      }
+
+      #searchBtn {
+        width: auto !important;
+        margin: 0 !important;
+        min-width: 70px;
+      }
+
+      /* Stack other action buttons */
+      #studentLinkSection, #logoutBtn {
+        width: 100% !important;
+        margin-top: 10px !important;
       }
 
       input[type="text"],
       input[type="file"],
       button {
-        width: 100%;
         box-sizing: border-box;
-        /* لضمان عدم خروج العنصر عن العرض */
-        margin: 8px 0;
         padding: 12px;
-        /* تكبير مساحة اللمس */
         font-size: 16px;
-        /* حجم مناسب للقراءة ويمنع التكبير التلقائي في iOS */
-      }
-
-      button {
-        margin-top: 10px;
-        font-weight: bold;
       }
     }
 
