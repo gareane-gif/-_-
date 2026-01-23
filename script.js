@@ -3,6 +3,12 @@ function normalizeId2(val) {
   if (val == null) return '';
   if (typeof val === 'number') return String(Math.floor(val));
   let s = String(val).trim();
+  // FIX: معالجة الأرقام التي تحتوي على كسور عشرية مخزنة كنص (مثل "252001.0")
+  if (s.includes('.')) {
+    const parts = s.split('.');
+    // إذا كان الجزء العشري عبارة عن أصفار فقط، نتجاهله
+    if (parts[1] && /^0+$/.test(parts[1])) s = parts[0];
+  }
   // Normalize Arabic-Indic/Persian digits
   s = s.replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660));
   s = s.replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x06F0));
@@ -97,30 +103,27 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_DEEP_FIX_GITHUB");
+console.log("System Loaded: v20260123_READY_FOR_TEST");
 
 const SERVER_FILES = [
-  'xls/قسم الحاسوب25-26.xls',
-  'xls/قسم الطاقة25-26.xls',
-  'xls/قسم الكهرباء25-26.xls',
-  'xls/قسم المحاسبة25-26.xls',
-  'xls/قسم المساحة25-26.xls',
-  'xls/قسم الميكانيكا 25-26.xls', // لاحظ المسافة هنا
-  // نسخ .xlsx لنفس الملفات (احتياطاً)
-  'xls/قسم الحاسوب25-26.xlsx',
-  'xls/قسم الطاقة25-26.xlsx',
-  'xls/قسم الكهرباء25-26.xlsx',
-  'xls/قسم المحاسبة25-26.xlsx',
-  'xls/قسم المساحة25-26.xlsx',
-  'xls/قسم الميكانيكا 25-26.xlsx',
-  // احتمالات أخرى لأسماء الملفات (مع مسافات إضافية قد تحدث عند الرفع)
-  'xls/قسم الحاسوب 25-26.xls',
-  'xls/قسم الطاقة 25-26.xls',
-  'xls/قسم الكهرباء 25-26.xls',
-  'xls/قسم المحاسبة 25-26.xls',
-  'xls/قسم المساحة 25-26.xls',
-  'xls/قسم الميكانيكا25-26.xls'
+  // القائمة الأصلية المؤكدة
+  'xls/قسم الحاسوب25-26.xls', 'xls/قسم الطاقة25-26.xls', 'xls/قسم الكهرباء25-26.xls',
+  'xls/قسم المحاسبة25-26.xls', 'xls/قسم المساحة25-26.xls', 'xls/قسم الميكانيكا 25-26.xls'
 ];
+
+// إضافة احتمالات أخرى تلقائياً (لضمان تغطية الأخطاء الإملائية في الأسماء)
+const _DEPTS = ['قسم الحاسوب', 'قسم الطاقة', 'قسم الكهرباء', 'قسم المحاسبة', 'قسم المساحة', 'قسم الميكانيكا'];
+_DEPTS.forEach(d => {
+  SERVER_FILES.push(`xls/${d}25-26.xls`);
+  SERVER_FILES.push(`xls/${d} 25-26.xls`);
+  SERVER_FILES.push(`xls/${d}25-26.xlsx`);
+  SERVER_FILES.push(`xls/${d} 25-26.xlsx`);
+});
+
+// إزالة التكرار من القائمة لتجنب طلب نفس الملف مرتين من الخادم
+const _uniqueFiles = [...new Set(SERVER_FILES)];
+SERVER_FILES.length = 0;
+SERVER_FILES.push(..._uniqueFiles);
 
 function clearCache() {
   window.__workbookCache.clear();
@@ -522,13 +525,19 @@ function extractStudentData(sheet, r, range, headerRows, idColIdx, nameColIdx) {
   // - Column Z (index 25) as requested
   // - Identified Notes column
   // - Any column containing blocking keywords (fallback)
-  const blockingKeywords = /مراجعة|حجب|إيقاف|موقوف|تسجيل|مالية|مراجعة\s*القسم/i;
+  
+  // تحسين كلمات الحجب لتكون أكثر دقة وتجنب الحجب الخطأ بسبب أسماء المواد
+  const blockingKeywords = /مراجعة\s*(القسم|المسجل|الادارة|الإدارة|المالية)|حجب|إيقاف|موقوف|الشؤون\s*المالية|إيقاف\s*القيد/i;
   
   for (let offset = 0; offset <= 6; offset++) {
     const checkR = r + offset;
-    if (checkR > range.e.r) break;
+    // السماح بفحص صفوف إضافية قليلاً حتى لو تجاوزت النطاق الرسمي للجدول
+    if (checkR > range.e.r + 5) break;
     
-    for (let c = range.s.c; c <= range.e.c; c++) {
+    // توسيع نطاق البحث ليشمل العمود Z (رقم 25) حتى لو كان الجدول ينتهي قبله
+    const maxCol = Math.max(range.e.c, 26);
+    
+    for (let c = range.s.c; c <= maxCol; c++) {
       // Prioritize Column Z, Notes column, or any column with keywords
       const isPriorityCol = (c === 25 || c === notesColIdx);
       const cell = sheet[XLSX.utils.encode_cell({ r: checkR, c: c })];
@@ -536,7 +545,7 @@ function extractStudentData(sheet, r, range, headerRows, idColIdx, nameColIdx) {
         const val = String(cell.v).trim();
         
         // If it's a priority column OR contains blocking keywords, and is NOT a header
-        if ((isPriorityCol || blockingKeywords.test(val)) && !/ملاحظ|نتيجة|تقدير|معدل|فصلي/i.test(val)) {
+        if ((isPriorityCol || blockingKeywords.test(val)) && !/ملاحظ|نتيجة|تقدير|معدل|فصلي|المادة/i.test(val)) {
           data.blockMessage = val;
           return data; // Stop early if found
         }
@@ -757,7 +766,8 @@ function displayResult(student, sheetName, workbook) {
       (totalVal && totalVal !== "0" && totalVal !== "0.0" && totalVal !== "0.00");
 
     // Hide if units are 0 and there are no valid grades, unless explicitly required (backlog)
-    const shouldShow = (units > 0) || hasGrade || (info.isRequired && hasGrade);
+    // FIX: إظهار المواد المطالب بها (Backlog) حتى لو كانت الدرجة 0 أو لم تُرصد بعد
+    const shouldShow = (units > 0) || hasGrade || info.isRequired;
     if (!shouldShow) return;
 
     if (info.isRequired) displayHeader += ' (مطالب)';
