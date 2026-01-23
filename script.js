@@ -278,34 +278,35 @@ async function doSearch(studentId) {
           }
           // Fetch from server
           try {
-            const baseUrl = new URL('./', window.location.href).href;
-            const fileName = fileInfo.name.split('/').pop();
-            const folderName = fileInfo.name.split('/')[0];
-
-            const tryUrls = [
-              baseUrl + fileInfo.name,
-              baseUrl + folderName + '/' + encodeURIComponent(fileName),
-              encodeURI(baseUrl + fileInfo.name)
-            ];
-
+            const fileNameOnly = fileInfo.name.split('/').pop();
+            const folderPrefixes = ['xls/', 'XLS/', './xls/', '']; // Try different possible paths
+            
             let response = null;
-            let lastUrlTried = "";
             let lastStatus = 0;
+            let lastUrlTried = "";
 
-            for (const targetUrl of tryUrls) {
-              lastUrlTried = targetUrl;
-              try {
-                const r = await fetch(targetUrl);
-                lastStatus = r.status;
-                if (r.ok) {
-                  response = r;
-                  break;
-                }
-              } catch (e) { continue; }
+            for (const prefix of folderPrefixes) {
+              const tryPaths = [
+                prefix + fileNameOnly,
+                prefix + encodeURIComponent(fileNameOnly)
+              ];
+              
+              for (const p of tryPaths) {
+                lastUrlTried = p;
+                try {
+                  const r = await fetch(p);
+                  lastStatus = r.status;
+                  if (r.ok) {
+                    response = r;
+                    break;
+                  }
+                } catch (e) { continue; }
+              }
+              if (response) break;
             }
 
             if (!response || !response.ok) {
-              fetchErrors.push({ file: fileName, status: lastStatus, url: lastUrlTried });
+              fetchErrors.push({ file: fileNameOnly, status: lastStatus, url: lastUrlTried });
               continue; 
             }
             
