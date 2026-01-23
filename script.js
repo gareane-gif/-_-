@@ -97,7 +97,7 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_FIX_DIAG");
+console.log("System Loaded: v20260123_FIX_LINK_ISSUES");
 
 const SERVER_FILES = [
   'xls/قسم الحاسوب25-26.xls',
@@ -105,7 +105,14 @@ const SERVER_FILES = [
   'xls/قسم الكهرباء25-26.xls',
   'xls/قسم المحاسبة25-26.xls',
   'xls/قسم المساحة25-26.xls',
-  'xls/قسم الميكانيكا 25-26.xls'
+  'xls/قسم الميكانيكا 25-26.xls',
+  // إضافة احتمالات أخرى لأسماء الملفات (مع أو بدون مسافات) لتجنب أخطاء التحميل
+  'xls/قسم الحاسوب 25-26.xls',
+  'xls/قسم الطاقة 25-26.xls',
+  'xls/قسم الكهرباء 25-26.xls',
+  'xls/قسم المحاسبة 25-26.xls',
+  'xls/قسم المساحة 25-26.xls',
+  'xls/قسم الميكانيكا25-26.xls'
 ];
 
 function clearCache() {
@@ -208,6 +215,10 @@ if (!window.__searchListenerAttached) {
     doSearch(studentId);
   });
   document.getElementById('genLinkBtn').addEventListener('click', function () {
+    if (window.location.protocol === 'file:') {
+      alert('⚠️ تنبيه هام:\nأنت تعمل على ملف محلي (file://).\n\nالرابط الذي سيتم توليده لن يعمل عند الطلاب إلا إذا تم رفع المشروع على استضافة ويب أو خادم محلي.\n\nإذا أرسلت هذا الرابط لطالب، لن يتمكن متصفحه من الوصول لملفات النتائج الموجودة على جهازك.');
+    }
+    
     const url = window.location.href.split('?')[0].split('#')[0] + '?mode=student';
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
@@ -231,6 +242,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
 async function doSearch(studentId) {
   if (window.__searchInProgress) return;
+  if (typeof XLSX === 'undefined') {
+    alert('خطأ: لم يتم تحميل مكتبة المعالجة (SheetJS).\nتأكد من اتصالك بالإنترنت أو قم بتحميل المكتبة محلياً.');
+    return;
+  }
+
   const fileInput = document.getElementById('file');
   const resultDiv = document.getElementById('result');
   
@@ -279,7 +295,7 @@ async function doSearch(studentId) {
           // Fetch from server
           try {
             const fileNameOnly = fileInfo.name.split('/').pop();
-            const folderPrefixes = ['xls/', 'XLS/', './xls/', '']; // Try different possible paths
+            const folderPrefixes = ['xls/', 'XLS/', './xls/']; // إزالة المسار الخاطئ ('') لضمان البحث في مجلد xls فقط
             
             let response = null;
             let lastStatus = 0;
@@ -426,7 +442,14 @@ async function doSearch(studentId) {
     } else {
       if (scannedFilesCount === 0) {
         if (window.location.protocol === 'file:') {
-          resultDiv.innerHTML = `<p style="color:red; text-align:center;">تعذر تحميل الملفات تلقائياً لأنك قمت بفتح المنظومة كملف محلي.<br>يرجى تشغيل المنظومة عبر خادم (Server) أو استخدام زر "رفع الملفات" في واجهة الإدارة.</p>`;
+          resultDiv.innerHTML = `
+            <div style="color:#721c24; background-color:#f8d7da; border:1px solid #f5c6cb; padding:20px; border-radius:5px; text-align:center;">
+              <h3>⚠️ تعذر الوصول للملفات</h3>
+              <p>أنت تحاول استخدام البحث التلقائي ولكنك تفتح الصفحة كملف محلي (file://).</p>
+              <p>تمنع المتصفحات هذا الإجراء لأسباب أمنية.</p>
+              <hr style="border-top:1px solid #f5c6cb; margin:10px 0;">
+              <p><strong>الحل:</strong> يجب تشغيل المنظومة عبر خادم (مثل: <code>python -m http.server</code>) أو رفعها على استضافة ويب.</p>
+            </div>`;
         } else {
           let diagInfo = fetchErrors.map(e => `File: ${e.file} | Status: ${e.status || 'Error'} | URL: ${e.url || e.error}`).join('<br>');
           resultDiv.innerHTML = `
@@ -765,4 +788,3 @@ function extractDepartment(sheetName) {
   if (norm.includes('ميكانيكا')) return 'الهندسة الميكانيكية';
   return 'غير محدد';
 }
-
