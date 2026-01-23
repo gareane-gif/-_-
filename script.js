@@ -97,7 +97,7 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_FIX_LINK_ISSUES");
+console.log("System Loaded: v20260123_DEEP_FIX_GITHUB");
 
 const SERVER_FILES = [
   'xls/قسم الحاسوب25-26.xls',
@@ -105,8 +105,15 @@ const SERVER_FILES = [
   'xls/قسم الكهرباء25-26.xls',
   'xls/قسم المحاسبة25-26.xls',
   'xls/قسم المساحة25-26.xls',
-  'xls/قسم الميكانيكا 25-26.xls',
-  // إضافة احتمالات أخرى لأسماء الملفات (مع أو بدون مسافات) لتجنب أخطاء التحميل
+  'xls/قسم الميكانيكا 25-26.xls', // لاحظ المسافة هنا
+  // نسخ .xlsx لنفس الملفات (احتياطاً)
+  'xls/قسم الحاسوب25-26.xlsx',
+  'xls/قسم الطاقة25-26.xlsx',
+  'xls/قسم الكهرباء25-26.xlsx',
+  'xls/قسم المحاسبة25-26.xlsx',
+  'xls/قسم المساحة25-26.xlsx',
+  'xls/قسم الميكانيكا 25-26.xlsx',
+  // احتمالات أخرى لأسماء الملفات (مع مسافات إضافية قد تحدث عند الرفع)
   'xls/قسم الحاسوب 25-26.xls',
   'xls/قسم الطاقة 25-26.xls',
   'xls/قسم الكهرباء 25-26.xls',
@@ -301,18 +308,28 @@ async function doSearch(studentId) {
             let lastStatus = 0;
             let lastUrlTried = "";
 
+            // محاولة عدة صيغ لاسم الملف لضمان التوافق مع الخادم (NFC/NFD/Encoded)
+            const nameVariants = [
+              fileNameOnly,
+              encodeURIComponent(fileNameOnly),
+              fileNameOnly.normalize('NFC'), // الصيغة القياسية في ويندوز والويب
+              encodeURIComponent(fileNameOnly.normalize('NFC')),
+              fileNameOnly.normalize('NFD')  // الصيغة المفككة (شائعة في Mac/Linux)
+            ];
+            const uniqueNames = [...new Set(nameVariants)]; // إزالة التكرار
+
             for (const prefix of folderPrefixes) {
-              const tryPaths = [
-                prefix + fileNameOnly,
-                prefix + encodeURIComponent(fileNameOnly)
-              ];
-              
-              for (const p of tryPaths) {
+              for (const variant of uniqueNames) {
+                const p = prefix + variant;
                 lastUrlTried = p;
                 try {
                   const r = await fetch(p);
                   lastStatus = r.status;
                   if (r.ok) {
+                    // التأكد أن الاستجابة ليست صفحة HTML (خطأ 404 مقنع)
+                    const cType = r.headers.get("content-type");
+                    if (cType && cType.includes("text/html")) continue;
+                    
                     response = r;
                     break;
                   }
