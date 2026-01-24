@@ -103,17 +103,26 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_ENGLISH_NAMES_STABLE");
+console.log("System Loaded: v20260123_DEEP_FIX_FINAL");
 
-const SERVER_FILES = [
-  // الأسماء الإنجليزية المقترحة (الأكثر استقراراً للروابط)
-  'xls/computer.xls', 'xls/energy.xls', 'xls/electric.xls', 
-  'xls/accounting.xls', 'xls/surveying.xls', 'xls/mechanical.xls',
-  'xls/computer.xlsx', 'xls/energy.xlsx', 'xls/electric.xlsx', 
-  'xls/accounting.xlsx', 'xls/surveying.xlsx', 'xls/mechanical.xlsx',
-  // الاحتفاظ بالأسماء الرقمية كخيار ثانٍ
-  'xls/1.xls', 'xls/2.xls', 'xls/3.xls', 'xls/4.xls', 'xls/5.xls', 'xls/6.xls'
+// تعريف الأقسام مع كافة مسميات الملفات المحتملة لكل قسم
+const DEPARTMENTS_CONFIG = [
+  { id: 'computer', names: ['computer', '1', 'قسم الحاسوب25-26', 'قسم الحاسوب'] },
+  { id: 'energy', names: ['energy', '2', 'قسم الطاقة25-26', 'قسم الطاقة'] },
+  { id: 'electric', names: ['electric', '3', 'قسم الكهرباء25-26', 'قسم الكهرباء'] },
+  { id: 'accounting', names: ['accounting', '4', 'قسم المحاسبة25-26', 'قسم المحاسبة'] },
+  { id: 'surveying', names: ['surveying', '5', 'قسم المساحة25-26', 'قسم المساحة'] },
+  { id: 'mechanical', names: ['mechanical', '6', 'قسم الميكانيكا 25-26', 'قسم الميكانيكا'] }
 ];
+
+const SERVER_FILES = [];
+DEPARTMENTS_CONFIG.forEach(dept => {
+  dept.names.forEach(name => {
+    SERVER_FILES.push(`xls/${name}.xls`);
+    SERVER_FILES.push(`xls/${name}.xlsx`);
+    SERVER_FILES.push(`${name}.xls`); // احتياط في حال كانت الملفات في المجلد الرئيسي
+  });
+});
 
 function clearCache() {
   window.__workbookCache.clear();
@@ -295,30 +304,31 @@ async function doSearch(studentId) {
           // Fetch from server
           try {
             const fileNameOnly = fileInfo.name.split('/').pop();
-            // جرب المسارات النسبية أولاً لتجنب مشاكل النطاق (Base URL)
-            const folderPrefixes = ['xls/', './xls/', 'XLS/', '']; 
+            const currentBase = window.location.href.split('?')[0].split('#')[0];
+            const baseUrl = new URL('./', currentBase).href;
             
             let response = null;
             let lastStatus = 0;
             let lastUrlTried = "";
 
-            // محاولة عدة صيغ لاسم الملف لضمان التوافق مع الخادم (NFC/NFD/Encoded)
+            // محاولة بناء الرابط بأكثر من طريقة (مطلق، نسبي، مشفر)
             const nameVariants = [
               fileNameOnly,
               encodeURIComponent(fileNameOnly),
               fileNameOnly.normalize('NFC'),
-              encodeURIComponent(fileNameOnly.normalize('NFC')),
-              fileNameOnly.normalize('NFD')
+              encodeURIComponent(fileNameOnly.normalize('NFC'))
             ];
             const uniqueNames = [...new Set(nameVariants)];
+            
+            // قائمة المجلدات المحتملة للبحث فيها
+            const possibleFolders = ['xls/', 'XLS/', './xls/', ''];
 
-            outerLoop: for (const prefix of folderPrefixes) {
+            outerLoop: for (const folder of possibleFolders) {
               for (const variant of uniqueNames) {
-                const p = prefix + variant;
-                lastUrlTried = p;
+                const targetUrl = new URL(folder + variant, baseUrl).href;
+                lastUrlTried = targetUrl;
                 try {
-                  // إضافة cache: 'no-store' وتجربة المسار المباشر
-                  const r = await fetch(p, { cache: 'no-store' });
+                  const r = await fetch(targetUrl, { cache: 'no-store' });
                   lastStatus = r.status;
                   if (r.ok) {
                     const cType = r.headers.get("content-type");
