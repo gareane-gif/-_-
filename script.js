@@ -312,21 +312,20 @@ async function doSearch(studentId) {
             let lastStatus = 0;
             let lastUrlTried = "";
 
-            // محاولة بناء الرابط بأكثر من طريقة (مطلق، نسبي، مشفر)
+            // محاولة بناء الرابط بأبسط طريقة ممكنة لتجنب مشاكل المسارات في GitHub
             const nameVariants = [
               fileNameOnly,
               encodeURIComponent(fileNameOnly),
-              fileNameOnly.normalize('NFC'),
-              encodeURIComponent(fileNameOnly.normalize('NFC'))
+              fileNameOnly.normalize('NFC')
             ];
             const uniqueNames = [...new Set(nameVariants)];
             
-            // قائمة المجلدات المحتملة للبحث فيها
-            const possibleFolders = ['xls/', 'XLS/', './xls/', ''];
+            // قائمة المجلدات المحتملة للبحث فيها (نسبة لموقع الصفحة)
+            const possibleFolders = ['xls/', './xls/', ''];
 
             outerLoop: for (const folder of possibleFolders) {
               for (const variant of uniqueNames) {
-                const targetUrl = new URL(folder + variant, baseUrl).href;
+                const targetUrl = folder + variant; // استخدام مسار نسبي مباشر
                 lastUrlTried = targetUrl;
                 try {
                   const r = await fetch(targetUrl, { cache: 'no-store' });
