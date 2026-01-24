@@ -103,17 +103,9 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_EXACT_NAMES_FINAL");
+console.log("System Loaded: v20260123_FINAL_ULTRA_FIX");
 
-const SERVER_FILES = [
-  // محاولة شاملة لكل الاحتمالات (مجلد صغير/كبير، امتداد صغير/كبير، مع وبدون مجلد)
-  'xls/accounting.xlsx', 'XLS/accounting.xlsx', 'xls/accounting.xls', 'accounting.xlsx',
-  'xls/computer.xlsx', 'XLS/computer.xlsx', 'xls/computer.xls', 'computer.xlsx',
-  'xls/electric.xlsx', 'XLS/electric.xlsx', 'xls/electric.xls', 'electric.xlsx',
-  'xls/energy.xlsx', 'XLS/energy.xlsx', 'xls/energy.xls', 'energy.xlsx',
-  'xls/mechanical.xlsx', 'XLS/mechanical.xlsx', 'xls/mechanical.xls', 'mechanical.xlsx',
-  'xls/surveying.xlsx', 'XLS/surveying.xlsx', 'xls/surveying.xls', 'surveying.xlsx'
-];
+const SERVER_DEPT_NAMES = ['accounting', 'computer', 'electric', 'energy', 'mechanical', 'surveying'];
 
 function clearCache() {
   window.__workbookCache.clear();
@@ -256,8 +248,8 @@ async function doSearch(studentId) {
   if (fileInput && fileInput.files.length > 0) {
     filesToProcess = Array.from(fileInput.files);
   } else {
-    // If no files selected, use the predefined server files
-    filesToProcess = SERVER_FILES.map(path => ({ name: path, isServer: true }));
+    // استخدام أسماء الأقسام للبحث في السيرفر
+    filesToProcess = SERVER_DEPT_NAMES.map(name => ({ name: name, isServer: true }));
     isServerFetch = true;
   }
 
@@ -287,52 +279,47 @@ async function doSearch(studentId) {
         workbook = window.__workbookCache.get(cacheKey);
       } else {
         if (fileInfo.isServer) {
-          // Check for file:// protocol which blocks fetch
           if (window.location.protocol === 'file:') {
             console.warn('Fetch skipped: Browser blocks local file access (CORS). Use a server or upload files.');
             continue;
           }
-          // Fetch from server
+          
           try {
-            const fileNameOnly = fileInfo.name.split('/').pop();
-            const currentBase = window.location.href.split('?')[0].split('#')[0];
-            const baseUrl = new URL('./', currentBase).href;
-            
+            const baseName = fileInfo.name;
             let response = null;
             let lastStatus = 0;
             let lastUrlTried = "";
 
-            // محاولة بناء الرابط بأبسط طريقة ممكنة لتجنب مشاكل المسارات في GitHub
-            const nameVariants = [
-              fileNameOnly,
-              encodeURIComponent(fileNameOnly),
-              fileNameOnly.normalize('NFC')
-            ];
-            const uniqueNames = [...new Set(nameVariants)];
+            // توليد قائمة بكل الاحتمالات الممكنة للرابط
+            const possibleFolders = ['xls/', 'XLS/', './xls/', ''];
+            const possibleExts = ['.xlsx', '.xls', ''];
+            const possibleUrls = [];
             
-            // قائمة المجلدات المحتملة للبحث فيها (نسبة لموقع الصفحة)
-            const possibleFolders = ['xls/', './xls/', ''];
-
-            outerLoop: for (const folder of possibleFolders) {
-              for (const variant of uniqueNames) {
-                const targetUrl = folder + variant; // استخدام مسار نسبي مباشر
-                lastUrlTried = targetUrl;
-                try {
-                  const r = await fetch(targetUrl, { cache: 'no-store' });
-                  lastStatus = r.status;
-                  if (r.ok) {
-                    const cType = r.headers.get("content-type");
-                    if (cType && cType.includes("text/html")) continue;
-                    
-                    response = r;
-                    break outerLoop;
-                  }
-                } catch (e) { continue; }
+            for (const f of possibleFolders) {
+              for (const e of possibleExts) {
+                possibleUrls.push(f + baseName + e);
               }
             }
 
+            // محاولة كل الاحتمالات حتى النجاح
+            outerLoop: for (const targetUrl of possibleUrls) {
+              lastUrlTried = targetUrl;
+              try {
+                // استخدام رابط مطلق بناءً على موقع الصفحة لضمان الدقة في GitHub Pages
+                const absoluteUrl = new URL(targetUrl, window.location.href).href;
+                const r = await fetch(absoluteUrl, { cache: 'no-store' });
+                lastStatus = r.status;
+                if (r.ok) {
+                  const cType = r.headers.get("content-type");
+                  if (cType && cType.includes("text/html")) continue;
+                  response = r;
+                  break outerLoop;
+                }
+              } catch (e) { continue; }
+            }
+
             if (!response || !response.ok) {
-              fetchErrors.push({ file: fileNameOnly, status: lastStatus, url: lastUrlTried });
+              fetchErrors.push({ file: baseName, status: lastStatus, url: lastUrlTried });
               continue; 
             }
             
@@ -757,23 +744,17 @@ function displayResult(student, sheetName, workbook) {
     }
     seenHeaders[header] = true;
 
-    // 2. Visibility Logic
+    // 2. Visibility Logic: عرض المادة إذا كان لها درجة أو عدد وحدات أكبر من 0
     const rawUnit = row[i];
     const units = parseFloat(rawUnit) || 0;
     const workVal = (workRow[i] != null) ? String(workRow[i]).trim() : '';
     const finalVal = (finalRow[i] != null) ? String(finalRow[i]).trim() : '';
     const totalVal = (totalRow[i] != null) ? String(totalRow[i]).trim() : '';
 
-    const hasGrade = (workVal && workVal !== "0" && workVal !== "0.0" && workVal !== "0.00") ||
-      (finalVal && finalVal !== "0" && finalVal !== "0.0" && finalVal !== "0.00") ||
-      (totalVal && totalVal !== "0" && totalVal !== "0.0" && totalVal !== "0.00");
-
-    // STRICT FILTER: Hide if units are 0 or empty, unless there is a valid non-zero grade
-    const isActuallyZero = (units === 0 || rawUnit === "" || rawUnit == null);
-    if (isActuallyZero && !hasGrade) return;
-
-    const shouldShow = (units > 0) || hasGrade;
-    if (!shouldShow) return;
+    const hasGrade = (workVal && workVal !== "0") || (finalVal && finalVal !== "0") || (totalVal && totalVal !== "0");
+    
+    // إذا لم تكن هناك درجة ولم تكن هناك وحدات، نتجاهل المادة
+    if (units === 0 && !hasGrade) return;
 
     if (info.isRequired) displayHeader += ' (مطالب)';
 
