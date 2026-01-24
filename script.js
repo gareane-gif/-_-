@@ -554,14 +554,8 @@ function extractStudentData(sheet, r, range, headerRows, idColIdx, nameColIdx) {
     }
   }
 
-  // Label detection logic similar to Python
+  // Label detection logic (units, work, final, total)
   let workRowIdx = null, finalRowIdx = null, totalRowIdx = null, unitsRowIdx = null;
-  const labelReWork = /اعمال|أعمال/i;
-  const labelReFinal = /امتحان|الأمتحان|اختبار/i;
-  const labelReTotal = /المجموع|مجموع/i;
-  const labelReUnits = /عدد\s*الوحدات/i;
-
-  // Scan 8 rows for labels (units, work, final, total)
   const labelReWork = /اعمال|أعمال/i;
   const labelReFinal = /امتحان|الأمتحان|اختبار/i;
   const labelReTotal = /المجموع|مجموع/i;
