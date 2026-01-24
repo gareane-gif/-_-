@@ -316,7 +316,7 @@ async function doSearch(studentId) {
                 const p = prefix + variant;
                 lastUrlTried = p;
                 try {
-                  // إضافة cache: 'no-store' لضمان عدم تحميل صفحة 404 مخزنة
+                  // إضافة cache: 'no-store' وتجربة المسار المباشر
                   const r = await fetch(p, { cache: 'no-store' });
                   lastStatus = r.status;
                   if (r.ok) {
@@ -754,9 +754,9 @@ function displayResult(student, sheetName, workbook) {
       (finalVal && finalVal !== "0" && finalVal !== "0.0" && finalVal !== "0.00") ||
       (totalVal && totalVal !== "0" && totalVal !== "0.0" && totalVal !== "0.00");
 
-    // Hide if units are 0 and there are no valid grades, unless explicitly required (backlog)
-    // FIX: إظهار المواد المطالب بها (Backlog) حتى لو كانت الدرجة 0 أو لم تُرصد بعد
-    const shouldShow = (units > 0) || hasGrade || info.isRequired;
+    // Hide if units are 0 and there are no valid grades
+    // We only show if there's a grade OR if it has units > 0
+    const shouldShow = hasGrade || (units > 0);
     if (!shouldShow) return;
 
     if (info.isRequired) displayHeader += ' (مطالب)';
