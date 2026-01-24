@@ -106,13 +106,13 @@ window.__workbookCache = new Map();
 console.log("System Loaded: v20260123_EXACT_NAMES_FINAL");
 
 const SERVER_FILES = [
-  // صيغة xlsx فقط (الأضمن للعمل على GitHub Pages)
-  'xls/accounting.xlsx',
-  'xls/computer.xlsx',
-  'xls/electric.xlsx',
-  'xls/energy.xlsx',
-  'xls/mechanical.xlsx',
-  'xls/surveying.xlsx'
+  // محاولة شاملة لكل الاحتمالات (مجلد صغير/كبير، امتداد صغير/كبير، مع وبدون مجلد)
+  'xls/accounting.xlsx', 'XLS/accounting.xlsx', 'xls/accounting.xls', 'accounting.xlsx',
+  'xls/computer.xlsx', 'XLS/computer.xlsx', 'xls/computer.xls', 'computer.xlsx',
+  'xls/electric.xlsx', 'XLS/electric.xlsx', 'xls/electric.xls', 'electric.xlsx',
+  'xls/energy.xlsx', 'XLS/energy.xlsx', 'xls/energy.xls', 'energy.xlsx',
+  'xls/mechanical.xlsx', 'XLS/mechanical.xlsx', 'xls/mechanical.xls', 'mechanical.xlsx',
+  'xls/surveying.xlsx', 'XLS/surveying.xlsx', 'xls/surveying.xls', 'surveying.xlsx'
 ];
 
 function clearCache() {
