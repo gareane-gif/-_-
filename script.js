@@ -103,27 +103,17 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_ULTRA_STABLE_V2");
+console.log("System Loaded: v20260123_EXACT_NAMES_FINAL");
 
-// تعريف الأقسام مع كافة مسميات الملفات المحتملة لكل قسم
-const DEPARTMENTS_CONFIG = [
-  { id: 'computer', names: ['computer', '1', 'قسم الحاسوب25-26', 'قسم الحاسوب'] },
-  { id: 'energy', names: ['energy', '2', 'قسم الطاقة25-26', 'قسم الطاقة'] },
-  { id: 'electric', names: ['electric', '3', 'قسم الكهرباء25-26', 'قسم الكهرباء'] },
-  { id: 'accounting', names: ['accounting', '4', 'قسم المحاسبة25-26', 'قسم المحاسبة'] },
-  { id: 'surveying', names: ['surveying', '5', 'قسم المساحة25-26', 'قسم المساحة'] },
-  { id: 'mechanical', names: ['mechanical', '6', 'قسم الميكانيكا 25-26', 'قسم الميكانيكا'] }
+const SERVER_FILES = [
+  // الأسماء الحقيقية من السيرفر (كما ظهرت في لقطة الشاشة)
+  'xls/accounting.xls', 'xls/accounting.xlsx', 'xls/accounting',
+  'xls/computer.xls', 'xls/computer.xlsx', 'xls/computer',
+  'xls/electric.xls', 'xls/electric.xlsx', 'xls/electric',
+  'xls/energy.xls', 'xls/energy.xlsx', 'xls/energy',
+  'xls/mechanical.xls', 'xls/mechanical.xlsx', 'xls/mechanical',
+  'xls/surveying.xls', 'xls/surveying.xlsx', 'xls/surveying'
 ];
-
-const SERVER_FILES = [];
-DEPARTMENTS_CONFIG.forEach(dept => {
-  dept.names.forEach(name => {
-    SERVER_FILES.push(`xls/${name}.xls`);
-    SERVER_FILES.push(`xls/${name}.xlsx`);
-    SERVER_FILES.push(`${name}.xls`); 
-    SERVER_FILES.push(`${name}.xlsx`);
-  });
-});
 
 function clearCache() {
   window.__workbookCache.clear();
