@@ -103,7 +103,7 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_DEEP_FIX_FINAL");
+console.log("System Loaded: v20260123_ULTRA_STABLE_V2");
 
 // تعريف الأقسام مع كافة مسميات الملفات المحتملة لكل قسم
 const DEPARTMENTS_CONFIG = [
@@ -120,7 +120,8 @@ DEPARTMENTS_CONFIG.forEach(dept => {
   dept.names.forEach(name => {
     SERVER_FILES.push(`xls/${name}.xls`);
     SERVER_FILES.push(`xls/${name}.xlsx`);
-    SERVER_FILES.push(`${name}.xls`); // احتياط في حال كانت الملفات في المجلد الرئيسي
+    SERVER_FILES.push(`${name}.xls`); 
+    SERVER_FILES.push(`${name}.xlsx`);
   });
 });
 
@@ -560,16 +561,34 @@ function extractStudentData(sheet, r, range, headerRows, idColIdx, nameColIdx) {
   const labelReTotal = /المجموع|مجموع/i;
   const labelReUnits = /عدد\s*الوحدات/i;
 
-  // Scan 8 rows for labels in columns 0 to 10 (labels can move)
-  for (let rr = r; rr < Math.min(range.e.r + 1, r + 8); rr++) {
+  // Scan 8 rows for labels (units, work, final, total)
+  const labelReWork = /اعمال|أعمال/i;
+  const labelReFinal = /امتحان|الأمتحان|اختبار/i;
+  const labelReTotal = /المجموع|مجموع/i;
+  const labelReUnits = /عدد\s*الوحدات|وحدات|ساعات/i;
+
+  for (let rr = Math.max(0, r - 5); rr < Math.min(range.e.r + 1, r + 15); rr++) {
     for (let cc = range.s.c; cc <= Math.min(range.e.c, range.s.c + 10); cc++) {
       const cell = sheet[XLSX.utils.encode_cell({ r: rr, c: cc })];
       if (!cell || !cell.v) continue;
       const lbl = String(cell.v).trim();
+      
       if (workRowIdx === null && labelReWork.test(lbl)) workRowIdx = rr;
       if (finalRowIdx === null && labelReFinal.test(lbl)) finalRowIdx = rr;
       if (totalRowIdx === null && labelReTotal.test(lbl)) totalRowIdx = rr;
       if (unitsRowIdx === null && labelReUnits.test(lbl)) unitsRowIdx = rr;
+    }
+  }
+
+  // Smart fallback for units row: look for a row with numeric values (1-10) in subject columns
+  if (unitsRowIdx === null) {
+    for (let rr = Math.max(0, r - 5); rr < Math.min(range.e.r + 1, r + 5); rr++) {
+      let numericCount = 0;
+      for (let cc = range.s.c + 5; cc <= range.e.c; cc++) {
+        const cell = sheet[XLSX.utils.encode_cell({ r: rr, c: cc })];
+        if (cell && typeof cell.v === 'number' && cell.v > 0 && cell.v < 10) numericCount++;
+      }
+      if (numericCount > 3) { unitsRowIdx = rr; break; }
     }
   }
 
@@ -756,7 +775,8 @@ function displayResult(student, sheetName, workbook) {
     seenHeaders[header] = true;
 
     // 2. Visibility Logic
-    const units = parseFloat(row[i]) || 0;
+    const rawUnit = row[i];
+    const units = parseFloat(rawUnit) || 0;
     const workVal = (workRow[i] != null) ? String(workRow[i]).trim() : '';
     const finalVal = (finalRow[i] != null) ? String(finalRow[i]).trim() : '';
     const totalVal = (totalRow[i] != null) ? String(totalRow[i]).trim() : '';
@@ -765,10 +785,10 @@ function displayResult(student, sheetName, workbook) {
       (finalVal && finalVal !== "0" && finalVal !== "0.0" && finalVal !== "0.00") ||
       (totalVal && totalVal !== "0" && totalVal !== "0.0" && totalVal !== "0.00");
 
-    // Strict Rule: Hide if units are 0, regardless of other factors
-    if (units === 0) return;
+    // STRICT FILTER: Hide if units are 0 or empty, unless there is a valid non-zero grade
+    const isActuallyZero = (units === 0 || rawUnit === "" || rawUnit == null);
+    if (isActuallyZero && !hasGrade) return;
 
-    // Also hide if no units and no grade
     const shouldShow = (units > 0) || hasGrade;
     if (!shouldShow) return;
 
