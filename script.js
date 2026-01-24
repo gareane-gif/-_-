@@ -103,15 +103,16 @@ function pickName(rowData, idColIdx, nameColIdx) {
 
 window.__currentUser = null;
 window.__workbookCache = new Map(); 
-console.log("System Loaded: v20260123_ULTRA_STABLE");
+console.log("System Loaded: v20260123_ENGLISH_NAMES_STABLE");
 
 const SERVER_FILES = [
-  // المحاولة بالأرقام (الحل الأضمن لتجنب مشاكل اللغة العربية في الروابط)
-  'xls/1.xls', 'xls/2.xls', 'xls/3.xls', 'xls/4.xls', 'xls/5.xls', 'xls/6.xls',
-  'xls/1.xlsx', 'xls/2.xlsx', 'xls/3.xlsx', 'xls/4.xlsx', 'xls/5.xlsx', 'xls/6.xlsx',
-  // المحاولة بالأسماء الأصلية (كاحتياط)
-  'xls/قسم الحاسوب25-26.xls', 'xls/قسم الطاقة25-26.xls', 'xls/قسم الكهرباء25-26.xls',
-  'xls/قسم المحاسبة25-26.xls', 'xls/قسم المساحة25-26.xls', 'xls/قسم الميكانيكا 25-26.xls'
+  // الأسماء الإنجليزية المقترحة (الأكثر استقراراً للروابط)
+  'xls/computer.xls', 'xls/energy.xls', 'xls/electric.xls', 
+  'xls/accounting.xls', 'xls/surveying.xls', 'xls/mechanical.xls',
+  'xls/computer.xlsx', 'xls/energy.xlsx', 'xls/electric.xlsx', 
+  'xls/accounting.xlsx', 'xls/surveying.xlsx', 'xls/mechanical.xlsx',
+  // الاحتفاظ بالأسماء الرقمية كخيار ثانٍ
+  'xls/1.xls', 'xls/2.xls', 'xls/3.xls', 'xls/4.xls', 'xls/5.xls', 'xls/6.xls'
 ];
 
 function clearCache() {
@@ -754,9 +755,11 @@ function displayResult(student, sheetName, workbook) {
       (finalVal && finalVal !== "0" && finalVal !== "0.0" && finalVal !== "0.00") ||
       (totalVal && totalVal !== "0" && totalVal !== "0.0" && totalVal !== "0.00");
 
-    // Hide if units are 0 and there are no valid grades
-    // We only show if there's a grade OR if it has units > 0
-    const shouldShow = hasGrade || (units > 0);
+    // Strict Rule: Hide if units are 0, regardless of other factors
+    if (units === 0) return;
+
+    // Also hide if no units and no grade
+    const shouldShow = (units > 0) || hasGrade;
     if (!shouldShow) return;
 
     if (info.isRequired) displayHeader += ' (مطالب)';
