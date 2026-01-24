@@ -248,7 +248,7 @@ async function doSearch(studentId) {
   if (fileInput && fileInput.files.length > 0) {
     filesToProcess = Array.from(fileInput.files);
   } else {
-    // استخدام أسماء الأقسام للبحث في السيرفر
+    // محاولة البحث في السيرفر بهدوء دون إظهار أخطاء معقدة
     filesToProcess = SERVER_DEPT_NAMES.map(name => ({ name: name, isServer: true }));
     isServerFetch = true;
   }
@@ -438,31 +438,17 @@ async function doSearch(studentId) {
       displayResult(foundStudent, sheetNameText, foundWorkbook);
     } else {
       if (scannedFilesCount === 0) {
-        if (window.location.protocol === 'file:') {
+        if (isServerFetch) {
           resultDiv.innerHTML = `
-            <div style="color:#721c24; background-color:#f8d7da; border:1px solid #f5c6cb; padding:20px; border-radius:5px; text-align:center;">
-              <h3>⚠️ تعذر الوصول للملفات</h3>
-              <p>أنت تحاول استخدام البحث التلقائي ولكنك تفتح الصفحة كملف محلي (file://).</p>
-              <p>تمنع المتصفحات هذا الإجراء لأسباب أمنية.</p>
-              <hr style="border-top:1px solid #f5c6cb; margin:10px 0;">
-              <p><strong>الحل:</strong> يجب تشغيل المنظومة عبر خادم (مثل: <code>python -m http.server</code>) أو رفعها على استضافة ويب.</p>
-            </div>`;
-        } else {
-          let diagInfo = fetchErrors.map(e => `File: ${e.file} | Status: ${e.status || 'Error'} | URL: ${e.url || e.error}`).join('<br>');
-          resultDiv.innerHTML = `
-            <div style="color:red; text-align:center; padding: 20px; border: 1px solid #ffccd5; background: #fff5f6; border-radius: 8px;">
-              <p style="font-weight:bold; margin-bottom:10px;">تعذر الوصول إلى ملفات النتائج على الخادم.</p>
-              <p style="font-size: 0.85rem; color: #666;">يرجى التأكد من رفع مجلد (xls) الذي يحتوي على ملفات الإكسل بجانب ملف index.html.</p>
-              <div style="margin-top:15px; padding:10px; background:#fff; border:1px solid #ddd; font-family:monospace; font-size:0.7rem; text-align:left; direction:ltr; overflow-x:auto;">
-                <b>Diagnostic Info (All attempts failed):</b><br>
-                ${diagInfo || 'No files reached.'}
-              </div>
+            <div style="text-align:center; padding: 20px; border: 1px solid #ddd; background: #f9f9f9; border-radius: 8px;">
+              <p style="font-weight:bold; color: #555;">يرجى رفع ملفات الإكسل (النتائج) من جهازك أولاً للبدء في البحث.</p>
+              <p style="font-size: 0.9rem; color: #888;">يمكنك القيام بذلك عبر زر "Choose Files" في الأعلى.</p>
             </div>
           `;
         }
       } else {
         resultDiv.innerHTML = `<p style="color:red; text-align:center;">لم يتم العثور على طالب برقم القيد: ${studentId}</p>
-                               <p style="text-align:center; font-size:smaller; color:#666;">(تم البحث في ${scannedFilesCount} ملفات)</p>`;
+                               <p style="text-align:center; font-size:smaller; color:#666;">(تم البحث في ${scannedFilesCount} ملفات تم رفعها)</p>`;
       }
       resultDiv.classList.add('show');
     }
