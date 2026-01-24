@@ -106,13 +106,13 @@ window.__workbookCache = new Map();
 console.log("System Loaded: v20260123_EXACT_NAMES_FINAL");
 
 const SERVER_FILES = [
-  // الأسماء الحقيقية من السيرفر (كما ظهرت في لقطة الشاشة)
-  'xls/accounting.xls', 'xls/accounting.xlsx', 'xls/accounting',
-  'xls/computer.xls', 'xls/computer.xlsx', 'xls/computer',
-  'xls/electric.xls', 'xls/electric.xlsx', 'xls/electric',
-  'xls/energy.xls', 'xls/energy.xlsx', 'xls/energy',
-  'xls/mechanical.xls', 'xls/mechanical.xlsx', 'xls/mechanical',
-  'xls/surveying.xls', 'xls/surveying.xlsx', 'xls/surveying'
+  // صيغة xlsx فقط (الأضمن للعمل على GitHub Pages)
+  'xls/accounting.xlsx',
+  'xls/computer.xlsx',
+  'xls/electric.xlsx',
+  'xls/energy.xlsx',
+  'xls/mechanical.xlsx',
+  'xls/surveying.xlsx'
 ];
 
 function clearCache() {
