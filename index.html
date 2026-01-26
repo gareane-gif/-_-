@@ -284,7 +284,13 @@
     @media print {
       @page {
         size: A4 portrait;
-        margin: 0; /* إخفاء رابط الملف والتاريخ (الهيدر والفوتر) بشكل قطعي */
+        margin: 1cm; /* تحسين الهوامش لضمان وجود مساحة من الأعلى والأسفل */
+        @top-center { content: ""; }
+        @bottom-center { content: ""; }
+        @top-left { content: ""; }
+        @top-right { content: ""; }
+        @bottom-left { content: ""; }
+        @bottom-right { content: ""; }
       }
 
       body {
@@ -294,16 +300,34 @@
         height: auto;
         overflow: visible !important;
       }
+      
+      #result {
+        margin-top: 1cm !important;
+        margin-bottom: 1cm !important;
+        padding: 0 !important;
+      }
+      
+      .student-result {
+        margin-top: 1cm !important;
+        margin-bottom: 1cm !important;
+        padding: 0 !important;
+      }
+      
+      .department-cover {
+        margin-top: 1cm !important;
+        margin-bottom: 1cm !important;
+        padding: 0 !important;
+      }
 
       .container {
         visibility: visible;
         position: relative; 
-        margin: 1.5cm auto !important; /* زيادة الهوامش حسب رغبة المستخدم */
-        width: calc(100% - 3cm); 
-        padding: 30px !important; 
+        margin: 0.3cm auto !important; /* تقليل الهامش لتبدأ النتيجة من أعلى الصفحة */
+        width: calc(100% - 0.6cm); 
+        padding: 15px !important; 
         box-shadow: none;
-        /* إطار كامل للصفحة عند الطباعة */
-        border: 6px double #003366 !important;
+        /* إزالة الإطار الخارجي */
+        border: none !important;
         height: auto;
         display: block;
         page-break-inside: avoid;
@@ -315,16 +339,48 @@
       .input-section,
       .action-buttons,
       .debug-div,
-      .logout-btn {
+      .logout-btn,
+      .academic-year-section {
         display: none !important;
       }
 
-      /* ضمان ظهور المحتوى المطلوب (الرأس والنتيجة) */
-      .header-section,
-      .header-section *,
-      #result,
+      /* ضمان ظهور محتوى النتيجة فقط */
+      #result {
+        visibility: visible;
+      }
+      
       #result * {
         visibility: visible;
+      }
+      
+      /* إخفاء رأس الصفحة لتجنب التكرار */
+      .header-section {
+        display: none !important;
+      }
+      
+      /* Ensure print styling is applied correctly */
+      @media print {
+        .header-section {
+          display: none !important;
+        }
+        
+        .result-table th {
+          background-color: #003366 !important;
+          color: white !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        .result-table tr:nth-child(even) {
+          background-color: #f2f2f2 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* Ensure registrar section is visible in print */
+        .signature-section {
+          display: block !important;
+        }
       }
 
       .print-btn {
@@ -349,9 +405,9 @@
         print-color-adjust: exact;
       }
 
-      /* إزالة إطار قسم النتيجة الداخلي عند الطباعة لتجنب التكرار */
+      /* تعديل إطار قسم النتيجة لضمان توافقه مع الإطار العام */
       .result-section {
-        border: none !important;
+        border: 1px solid transparent !important;
         padding: 0 !important;
       }
 
@@ -375,6 +431,12 @@
         break-inside: avoid;
         margin-top: 30px !important; /* تقليل المسافة العلوية لضمان البقاء في نفس الصفحة */
       }
+      
+      /* تأكيد ظهور المحتوى مع هوامش مناسبة */
+      #result > div {
+        margin-top: 1cm !important;
+        margin-bottom: 1cm !important;
+      }
     }
   </style>
 </head>
@@ -392,16 +454,9 @@
 
   <div id="mainApp" class="container">
     <div class="header-section">
-      <img src="LOGO.jpg" alt="شعار الوزارة" class="logo">
       <div style="text-align: center; flex: 1;">
-        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px;">
-          <h2
-            style="margin:0; font-size:1.8rem; color:var(--primary-color); font-weight:bold; font-family: 'Amiri', serif;">
-            المعهد العالي للعلوم والتقنية الجفرة بسوكنة</h2>
-        </div>
-        <h1 style="margin:5px 0 0; font-size:1.5rem;">استعلام عن نتيجة طالب</h1>
+        <h1 style="margin:5px 0 0; font-size:1.5rem;">استعلام عن نتيجة الطالب</h1>
       </div>
-      <img src="278143110_656758089110417_4349344937401225995_n.png" alt="شعار المعهد" class="logo">
     </div>
 
     <div id="topDate"
@@ -413,12 +468,26 @@
         <input type="file" id="file" accept=".xls,.xlsx" multiple />
         <div id="uploadStatus" style="margin-top: 10px; font-weight: bold; color: #28a745; display: none;"></div>
       </div>
+      
+      <div class="academic-year-section" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f8f9fa; display: none;">
+        <h3 style="margin-top: 0; color: var(--primary-color);">تعديل السنة الدراسية</h3>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: end;">
+          <div>
+            <label for="academicYearInput">نص السنة الدراسية:</label>
+            <input type="text" id="academicYearInput" value="خريف 2025-2026" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; min-width: 200px;">
+          </div>
+          <div>
+            <button id="saveAcademicYearBtn" style="margin-top: 5px; padding: 8px 15px; background-color: #28a745 !important; color: white; border: none; border-radius: 4px; cursor: pointer;">حفظ التغييرات</button>
+          </div>
+        </div>
+        <div id="academicYearStatus" style="margin-top: 10px; font-weight: bold; color: #28a745; display: none;"></div>
+      </div>
     </div>
 
     <div class="input-section">
       <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
         <div id="searchParts" style="flex: 1; min-width: 250px;">
-          <label for="studentId">أدخل رقم دراسي (رقم قيد):</label>
+          <label for="studentId">أدخل الرقم الدراسي (رقم القيد):</label>
           <div style="display: flex; gap: 10px; align-items: stretch; margin-top: 8px;">
             <input type="text" id="studentId" placeholder="مثال: AC231099" style="margin: 0; flex: 1;" />
             <button id="searchBtn" style="margin: 0; white-space: nowrap;">بحث</button>
@@ -428,6 +497,12 @@
           <label>رابط مشاركة المنظومة:</label>
           <button id="genLinkBtn" style="margin: 8px 0 0; width: 100%; height: 44px; background-color: #28a745 !important; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <span>توليد رابط المنظومة للطلبة</span>
+          </button>
+        </div>
+        <div id="printAllSection" style="display: none; flex: 1; min-width: 250px;">
+          <label>طباعة جميع الأقسام:</label>
+          <button id="printAllBtn" style="margin: 8px 0 0; width: 100%; height: 44px; background-color: #ffc107 !important; color: #000; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>🖨️ طباعة نتائج جميع الأقسام</span>
           </button>
         </div>
         <button id="logoutBtn" class="logout-btn" style="margin: 0; white-space: nowrap; height: 44px; display: flex; align-items: center; justify-content: center;">خروج</button>
