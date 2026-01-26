@@ -215,6 +215,87 @@
         padding: 12px;
         font-size: 16px;
       }
+
+      /* Table responsiveness for mobile */
+      .result-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        max-width: 100%;
+        font-size: 0.8rem;
+      }
+
+      .result-table th,
+      .result-table td {
+        min-width: 80px;
+        padding: 6px;
+        font-size: 0.7rem;
+      }
+
+      /* Action buttons for mobile */
+      .action-buttons {
+        text-align: center;
+      }
+
+      .print-btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+
+    /* Extra small devices (phones, less than 480px) */
+    @media (max-width: 480px) {
+      .container {
+        width: 98%;
+        padding: 10px !important;
+      }
+
+      .header-section h1 {
+        font-size: 1rem !important;
+      }
+
+      .header-section h2 {
+        font-size: 0.9rem !important;
+      }
+
+      .logo {
+        width: 40px !important;
+        height: 40px !important;
+      }
+
+      .input-section {
+        padding: 15px !important;
+      }
+
+      input[type="text"],
+      input[type="file"],
+      button {
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      #searchBtn {
+        min-width: 60px;
+      }
+
+      /* Further optimize table for small screens */
+      .result-table {
+        font-size: 0.7rem;
+      }
+
+      .result-table th,
+      .result-table td {
+        min-width: 60px;
+        padding: 4px;
+        font-size: 0.6rem;
+      }
+
+      .print-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
     }
 
     /* تنسيقات واجهة الدخول */
