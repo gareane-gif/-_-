@@ -938,32 +938,12 @@ function printResult() {
   const actionButtons = tempDiv.querySelector('.action-buttons');
   if (actionButtons) actionButtons.remove();
   
-  // Extract the student info section (the div with justify-content: space-between)
-  const studentInfoDiv = tempDiv.querySelector('div[style*="justify-content: space-between"]'); // Contains student name and GPA
-  
   // Extract the table container
   const tableContainer = tempDiv.querySelector('.table-container');
   const tableElement = tableContainer ? tableContainer.querySelector('.result-table') : tempDiv.querySelector('.result-table');
   
-  // Extract department and academic year info
-  const deptParagraph = tempDiv.querySelector('p[style*="font-size: 1.1rem"]'); // Department info
-  const yearParagraph = tempDiv.querySelector('p[style*="font-size: 1.0rem"]'); // Academic year info
-  
   // Build content without any institutional branding that might be in the original
   let contentHtml = '';
-  
-  // Add student info section
-  if (studentInfoDiv) {
-    contentHtml += studentInfoDiv.outerHTML;
-  }
-  
-  // Add department and academic year info
-  if (deptParagraph) {
-    contentHtml += deptParagraph.outerHTML;
-  }
-  if (yearParagraph) {
-    contentHtml += yearParagraph.outerHTML;
-  }
   
   // Add table
   if (tableElement) {
