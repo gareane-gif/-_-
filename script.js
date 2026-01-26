@@ -951,10 +951,13 @@ function printResult() {
   
   // Build content without any institutional branding that might be in the original
   let contentHtml = '';
+  
+  // Add student info section
   if (studentInfoDiv) {
     contentHtml += studentInfoDiv.outerHTML;
   }
   
+  // Add department and academic year info
   if (deptParagraph) {
     contentHtml += deptParagraph.outerHTML;
   }
@@ -962,6 +965,7 @@ function printResult() {
     contentHtml += yearParagraph.outerHTML;
   }
   
+  // Add table
   if (tableElement) {
     // If we have a table container, use it; otherwise use just the table
     if (tableContainer) {
@@ -970,6 +974,15 @@ function printResult() {
       contentHtml += `<div class="table-container">${tableElement.outerHTML}</div>`;
     }
   }
+  
+  // Add signature section
+  contentHtml += `
+    <div class="signature-section">
+      <div class="registrar-text">المسجل العام للمعهد</div>
+      <div class="signature-line"></div>
+      <b>التوقيع</b>
+    </div>
+  `;
   
   // Open the print.html file in a new window
   const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -982,16 +995,20 @@ function printResult() {
       <meta charset="UTF-8">
       <title>طباعة نتيجة الطالب</title>
       <style>
+        @page {
+          size: A4 portrait;
+          margin: 0.5cm; /* Reduced margin to prevent two-page issue */
+        }
         body { 
           font-family: 'Amiri', serif; 
-          margin: 1.5cm; 
+          margin: 0.5cm; 
           background: white;
           color: black;
         }
         .page-container {
           position: relative;
           min-height: 800px;
-          padding-top: 120px;
+          padding-top: 80px; /* Reduced padding */
         }
         .watermark {
           position: absolute;
@@ -1058,6 +1075,10 @@ function printResult() {
           margin: 20px auto;
           border-top: 1px solid #000;
         }
+        .signature-section {
+          margin-top: 30px; /* Reduced margin to prevent two-page issue */
+          text-align: center;
+        }
       </style>
     </head>
     <body>
@@ -1070,11 +1091,6 @@ function printResult() {
         </div>
         <div class="content" id="content">
           ${contentHtml}
-        </div>
-        <div class="signature-section">
-          <div class="registrar-text">المسجل العام للمعهد</div>
-          <div class="signature-line"></div>
-          <b>التوقيع</b>
         </div>
       </div>
     </body>
