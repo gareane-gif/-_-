@@ -1008,27 +1008,7 @@ function printResult() {
         .page-container {
           position: relative;
           min-height: 800px;
-          padding-top: 80px; /* Reduced padding */
-        }
-        .watermark {
-          position: absolute;
-          top: 20px;
-          left: 20px;
-          width: 80px;
-          height: 80px;
-          opacity: 0.3;
-          z-index: 1;
-          pointer-events: none;
-        }
-        .header-section {
-          text-align: center;
-          margin: 20px 0 30px 0;
-          color: #003366;
-        }
-        .institution-name {
-          font-size: 1.5rem;
-          margin: 0;
-          color: #003366;
+          padding-top: 20px; /* Reduced padding since no header */
         }
         .table-container {
           overflow-x: auto;
@@ -1083,12 +1063,6 @@ function printResult() {
     </head>
     <body>
       <div class="page-container">
-        <div class="watermark">
-          <img src="278143110_656758089110417_4349344937401225995_n.png" alt="شعار المعهد" style="width: 100%; height: 100%; object-fit: contain;" />
-        </div>
-        <div class="header-section">
-          <h2 class="institution-name">المعهد العالي للعلوم والتقنية الجفرة بسوكنة</h2>
-        </div>
         <div class="content" id="content">
           ${contentHtml}
         </div>
