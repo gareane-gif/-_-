@@ -217,19 +217,25 @@
       }
 
       /* Table responsiveness for mobile */
-      .result-table {
-        display: block;
+      .table-container {
         overflow-x: auto;
-        white-space: nowrap;
-        max-width: 100%;
+        width: 100%;
+        margin: 20px 0;
+      }
+
+      .result-table {
+        display: table;
+        min-width: 100%;
         font-size: 0.8rem;
+        border-collapse: collapse;
       }
 
       .result-table th,
       .result-table td {
-        min-width: 80px;
-        padding: 6px;
+        min-width: 100px;
+        padding: 8px;
         font-size: 0.7rem;
+        white-space: nowrap;
       }
 
       /* Action buttons for mobile */
@@ -281,15 +287,23 @@
       }
 
       /* Further optimize table for small screens */
+      .table-container {
+        overflow-x: auto;
+        width: 100%;
+        margin: 15px 0;
+      }
+
       .result-table {
         font-size: 0.7rem;
+        min-width: 100%;
       }
 
       .result-table th,
       .result-table td {
-        min-width: 60px;
-        padding: 4px;
+        min-width: 80px;
+        padding: 6px;
         font-size: 0.6rem;
+        white-space: nowrap;
       }
 
       .print-btn {

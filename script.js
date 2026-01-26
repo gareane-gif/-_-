@@ -917,7 +917,9 @@ function displayResult(student, sheetName, workbook) {
     <div class="action-buttons"><button class="print-btn" onclick="printResult()">طباعة النتيجة</button></div>
     <div style="position: relative; padding-top: 60px;">
       <div style="flex-grow: 1;">
-        ${tableHTML}
+        <div class="table-container">
+          ${tableHTML}
+        </div>
       </div>
     </div>
   `;
@@ -939,8 +941,9 @@ function printResult() {
   // Extract the student info section (the div with justify-content: space-between)
   const studentInfoDiv = tempDiv.querySelector('div[style*="justify-content: space-between"]'); // Contains student name and GPA
   
-  // Extract the table
-  const tableElement = tempDiv.querySelector('.result-table');
+  // Extract the table container
+  const tableContainer = tempDiv.querySelector('.table-container');
+  const tableElement = tableContainer ? tableContainer.querySelector('.result-table') : tempDiv.querySelector('.result-table');
   
   // Extract department and academic year info
   const deptParagraph = tempDiv.querySelector('p[style*="font-size: 1.1rem"]'); // Department info
@@ -960,7 +963,12 @@ function printResult() {
   }
   
   if (tableElement) {
-    contentHtml += tableElement.outerHTML;
+    // If we have a table container, use it; otherwise use just the table
+    if (tableContainer) {
+      contentHtml += tableContainer.outerHTML;
+    } else {
+      contentHtml += `<div class="table-container">${tableElement.outerHTML}</div>`;
+    }
   }
   
   // Open the print.html file in a new window
@@ -1005,11 +1013,18 @@ function printResult() {
           margin: 0;
           color: #003366;
         }
+        .table-container {
+          overflow-x: auto;
+          width: 100%;
+          margin: 20px 0;
+        }
+        
         .result-table {
           width: 100%;
           border-collapse: collapse;
-          margin: 20px 0;
+          margin: 0;
           font-size: 14px;
+          min-width: 100%;
         }
         .result-table th, .result-table td {
           border: 1px solid #333;
