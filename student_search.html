@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتائج الطلاب - المعهد العالي للعلوم والتقنية</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            margin: 0;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 20px auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        .search-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input-field {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            background: white;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+        
+        .search-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .quick-search-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .quick-btn {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .quick-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .clear-btn {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        
+        .clear-btn:hover {
+            background: #ffeaa7;
+            border-color: #ffb300;
+        }
+        
+        .student-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: right;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .student-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+        }
+        
+        .student-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-right: 4px solid #667eea;
+        }
+        
+        .info-item p {
+            margin: 5px 0;
+            color: #495057;
+        }
+        
+        .info-item strong {
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .subjects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .subjects-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .subjects-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+        
+        .subjects-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .no-results {
+            background: #fff5f5;
+            border: 2px solid #fed7d7;
+            border-radius: 15px;
+            padding: 30px;
+            color: #c53030;
+            text-align: center;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .header p {
+                font-size: 14px;
+            }
+            
+            .search-section {
+                padding: 20px;
+            }
+            
+            .search-input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .search-input-field {
+                min-width: 100%;
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            .search-button {
+                width: 100%;
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .quick-search-buttons {
+                justify-content: stretch;
+            }
+            
+            .quick-btn {
+                flex: 1;
+                min-width: 80px;
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+            
+            .student-card {
+                padding: 20px;
+            }
+            
+            .student-card h3 {
+                font-size: 20px;
+            }
+            
+            .student-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .info-item {
+                padding: 12px;
+            }
+            
+            .subjects-table {
+                font-size: 12px;
+            }
+            
+            .subjects-table th,
+            .subjects-table td {
+                padding: 8px 4px;
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                margin: 5px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .search-section {
+                padding: 15px;
+            }
+            
+            .search-input-field {
+                padding: 12px;
+                font-size: 16px;
+            }
+            
+            .search-button {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .quick-btn {
+                padding: 10px 6px;
+                font-size: 11px;
+            }
+            
+            .quick-search-buttons {
+                gap: 8px;
+            }
+            
+            .student-card {
+                padding: 15px;
+            }
+            
+            .student-card h3 {
+                font-size: 18px;
+            }
+            
+            .info-item {
+                padding: 10px;
+            }
+            
+            .subjects-table th,
+            .subjects-table td {
+                padding: 6px 2px;
+                font-size: 11px;
+            }
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-passed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 نتائج الطلاب</h1>
+            <p>المعهد العالي للعلوم والتقنية الجفرة بسوكنة</p>
+        </div>
+        
+        <div class="search-section">
+            <div class="form-group">
+                <label for="searchId">الرقم الدراسي:</label>
+                <div class="search-input-group">
+                    <input type="text" id="searchId" placeholder="أدخل الرقم الدراسي" class="search-input-field">
+                    <button onclick="searchStudent()" class="search-button">
+                        <span>🔍</span>
+                        <span>بحث</span>
+                    </button>
+                </div>
+                
+                <!-- Quick Search Buttons -->
+                <div class="quick-search-buttons">
+                    <button onclick="clearSearch()" class="quick-btn clear-btn">مسح البحث</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="searchResults"></div>
+        <div id="studentResultDisplay"></div>
+    </div>
+    
+    <script>
+        let students = [];
+        let fieldMapping = {
+            units: null,
+            classwork: null,
+            final: null,
+            total: null
+        };
+        
+        // Quick search function
+        function quickSearch(studentId) {
+            document.getElementById('searchId').value = studentId;
+            searchStudent();
+        }
+        
+        // Clear search function
+        function clearSearch() {
+            document.getElementById('searchId').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            document.getElementById('studentResultDisplay').innerHTML = '';
+        }
+        
+        // Load students from localStorage
+        function loadStudentsFromStorage() {
+            try {
+                // Try localStorage first
+                let storedStudents = localStorage.getItem('students');
+                if (storedStudents) {
+                    students = JSON.parse(storedStudents);
+                    console.log('✅ Loaded students from localStorage:', students.length);
+                    
+                    if (students.length > 0 && students[0].subjects) {
+                        analyzeStudentStructure(students[0]);
+                    }
+                    return;
+                }
+                
+                // Try sessionStorage
+                let sessionStudents = sessionStorage.getItem('students');
+                if (sessionStudents) {
+                    students = JSON.parse(sessionStudents);
+                    console.log('✅ Loaded students from sessionStorage:', students.length);
+                    
+                    if (students.length > 0 && students[0].subjects) {
+                        analyzeStudentStructure(students[0]);
+                    }
+                    return;
+                }
+                
+                console.log('❌ No students found in storage');
+            } catch (error) {
+                console.error('❌ Error loading students:', error);
+            }
+        }
+        
+        // Analyze student structure to discover field names
+        function analyzeStudentStructure(student) {
+            console.log('🔍 Analyzing student structure:', student);
+            
+            if (!student.subjects || student.subjects.length === 0) {
+                console.log('❌ No subjects found');
+                return;
+            }
+            
+            const firstSubject = student.subjects[0];
+            console.log('📖 First subject:', firstSubject);
+            
+            // Discover field names
+            const subjectFields = Object.keys(firstSubject);
+            console.log('🔑 Subject fields found:', subjectFields);
+            
+            // Map fields to expected types
+            fieldMapping = {
+                units: discoverField(subjectFields, ['units', 'credit', 'credits', 'وحدات', 'unit']),
+                classwork: discoverField(subjectFields, ['classwork', 'midterm', 'activities', 'أعمال فصل', 'أعمال', 'activity', 'mid']),
+                final: discoverField(subjectFields, ['final', 'exam', 'finalExam', 'نهائي', 'اختبار', 'test']),
+                total: discoverField(subjectFields, ['total', 'grade', 'score', 'مجموع', 'درجة', 'mark'])
+            };
+            
+            console.log('🗺️ Field mapping discovered:', fieldMapping);
+        }
+        
+        // Discover the best field name for a type
+        function discoverField(availableFields, possibleNames) {
+            for (const name of possibleNames) {
+                // Try exact match
+                if (availableFields.includes(name)) {
+                    console.log(`✅ Found exact match for ${possibleNames}: ${name}`);
+                    return name;
+                }
+                
+                // Try case-insensitive match
+                const lowerName = name.toLowerCase();
+                for (const field of availableFields) {
+                    if (field.toLowerCase() === lowerName) {
+                        console.log(`✅ Found case-insensitive match for ${possibleNames}: ${field}`);
+                        return field;
+                    }
+                }
+                
+                // Try partial match
+                for (const field of availableFields) {
+                    if (field.toLowerCase().includes(lowerName) || lowerName.includes(field.toLowerCase())) {
+                        console.log(`✅ Found partial match for ${possibleNames}: ${field}`);
+                        return field;
+                    }
+                }
+            }
+            
+            console.log(`❌ No match found for ${possibleNames}`);
+            return null;
+        }
+        
+        // Search student function
+        function searchStudent() {
+            const searchId = document.getElementById('searchId').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            const resultDisplayDiv = document.getElementById('studentResultDisplay');
+            
+            // Clear previous results
+            resultsDiv.innerHTML = '';
+            resultDisplayDiv.innerHTML = '';
+            
+            if (!searchId) {
+                resultsDiv.innerHTML = '<div class="no-results"><h3>الرجاء إدخال الرقم الدراسي</h3></div>';
+                return;
+            }
+            
+            if (students.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results"><h3>لا توجد بيانات طلاب</h3></div>';
+                return;
+            }
+            
+            // Search for student
+            const student = students.find(s => s.id === searchId || s.id.includes(searchId));
+            
+            if (!student) {
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        <h3>الطالب غير موجود</h3>
+                        <p>الرقم الدراسي: ${searchId}</p>
+                        <p>عدد الطلاب المتاح: ${students.length}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Check if student result is blocked
+            const blockedInfo = isStudentBlocked(student.id);
+            
+            if (blockedInfo) {
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        <h3>🚫 نتيجة الطالب محجوبة</h3>
+                        <p><strong>الرقم الدراسي:</strong> ${student.id}</p>
+                        <p><strong>اسم الطالب:</strong> ${student.name}</p>
+                        <p><strong>السبب:</strong> ${blockedInfo.reason || 'غير محدد'}</p>
+                        <p style="color: #666; font-size: 14px; margin-top: 10px;">يرجى التواصل مع لجنة الامتحانات</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display student result
+            displayStudentResult(student);
+        }
+        
+        // Check if student result is blocked
+        function isStudentBlocked(studentId) {
+            try {
+                const blockedStudents = JSON.parse(localStorage.getItem('blockedStudents') || '[]');
+                return blockedStudents.find(blocked => blocked.studentId === studentId);
+            } catch (error) {
+                console.error('❌ Error checking blocked status:', error);
+                return null;
+            }
+        }
+        
+        // Display student result
+        function displayStudentResult(student) {
+            const resultDisplayDiv = document.getElementById('studentResultDisplay');
+            
+            // Calculate totals using discovered field mapping
+            let totalUnits = 0;
+            let totalClassWork = 0;
+            let totalFinal = 0;
+            let totalGrade = 0;
+            let totalWeightedGrade = 0;
+            let passedSubjects = 0;
+            let failedSubjects = 0;
+            
+            // Calculate student status using same logic as main system
+            let studentStatus = 'منقول';
+            let failedRequiredSubjects = 0;
+            let hasFailedRequired = false;
+            
+            if (student.subjects && student.subjects.length > 0) {
+                student.subjects.forEach((subject, index) => {
+                    const units = fieldMapping.units ? parseInt(subject[fieldMapping.units]) || 0 : 0;
+                    const classwork = fieldMapping.classwork ? parseInt(subject[fieldMapping.classwork]) || 0 : 0;
+                    const final = fieldMapping.final ? parseInt(subject[fieldMapping.final]) || 0 : 0;
+                    const total = fieldMapping.total ? parseInt(subject[fieldMapping.total]) || 0 : (classwork + final);
+                    
+                    totalUnits += units;
+                    totalClassWork += classwork;
+                    totalFinal += final;
+                    totalGrade += total;
+                    
+                    if (units && total) {
+                        totalWeightedGrade += (total * units);
+                    }
+                    
+                    // Check if failed
+                    if (total < 50) {
+                        failedSubjects++;
+                        
+                        // Check if this is a required subject (contains "مطالب" in name)
+                        if (subject.name && subject.name.includes('(مطالب)')) {
+                            failedRequiredSubjects++;
+                            hasFailedRequired = true;
+                        }
+                    } else {
+                        passedSubjects++;
+                    }
+                });
+            }
+            
+            // Apply same logic as main system
+            const semesterGPA = totalUnits > 0 ? (totalWeightedGrade / totalUnits).toFixed(2) : 0;
+            
+            // Rule 1: If failed any "مطالب" subject, student fails
+            if (hasFailedRequired) {
+                studentStatus = 'راسب';
+            } else {
+                // Rule 2: Pass if failed subjects <= 2 AND GPA >= 50
+                const passed = failedSubjects <= 2 && parseFloat(semesterGPA) >= 50;
+                studentStatus = passed ? 'منقول' : 'راسب';
+            }
+            
+            const evaluation = getEvaluation(parseFloat(semesterGPA));
+            
+            // Generate subjects table
+            let subjectsTableHTML = '';
+            if (student.subjects && student.subjects.length > 0) {
+                subjectsTableHTML = `
+                    <table class="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>المادة</th>
+                                <th>الوحدات</th>
+                                <th>أعمال الفصل</th>
+                                <th>النهائي</th>
+                                <th>المجموع</th>
+                                <th>التقدير</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                student.subjects.forEach((subject, index) => {
+                    const units = fieldMapping.units ? parseInt(subject[fieldMapping.units]) || 0 : 0;
+                    const classwork = fieldMapping.classwork ? parseInt(subject[fieldMapping.classwork]) || 0 : 0;
+                    const final = fieldMapping.final ? parseInt(subject[fieldMapping.final]) || 0 : 0;
+                    const total = fieldMapping.total ? parseInt(subject[fieldMapping.total]) || 0 : (classwork + final);
+                    const grade = getGrade(total);
+                    
+                    subjectsTableHTML += `
+                        <tr>
+                            <td>${subject.name || 'غير محدد'}</td>
+                            <td>${units}</td>
+                            <td>${classwork}</td>
+                            <td>${final}</td>
+                            <td><strong>${total}</strong></td>
+                            <td>${grade}</td>
+                        </tr>
+                    `;
+                });
+                
+                subjectsTableHTML += '</tbody></table>';
+            }
+            
+            resultDisplayDiv.innerHTML = `
+                <div class="student-card">
+                    <h3>📊 نتيجة الطالب</h3>
+                    <div class="student-info">
+                        <div class="info-item">
+                            <strong>الرقم الدراسي:</strong>
+                            <p>${student.id || 'غير محدد'}</p>
+                        </div>
+                        <div class="info-item">
+                            <strong>اسم الطالب:</strong>
+                            <p>${student.name || 'غير محدد'}</p>
+                        </div>
+                        <div class="info-item">
+                            <strong>القسم:</strong>
+                            <p>${student.department || 'غير محدد'}</p>
+                        </div>
+                        <div class="info-item">
+                            <strong>الفصل:</strong>
+                            <p>${student.semester || 'غير محدد'}</p>
+                        </div>
+                        <div class="info-item">
+                            <strong>المعدل:</strong>
+                            <p style="color: #007bff; font-weight: bold; font-size: 18px;">${semesterGPA}</p>
+                        </div>
+                        <div class="info-item">
+                            <strong>الحالة:</strong>
+                            <p><span class="status-badge ${studentStatus === 'راسب' ? 'status-failed' : 'status-passed'}">${studentStatus}</span></p>
+                        </div>
+                        <div class="info-item">
+                            <strong>المواد الناجحة:</strong>
+                            <p style="color: #28a745; font-weight: bold;">${passedSubjects}</p>
+                        </div>
+                        <div class="info-item">
+                            <strong>المواد الراسبة:</strong>
+                            <p style="color: #dc3545; font-weight: bold;">${failedSubjects}</p>
+                        </div>
+                    </div>
+                    ${subjectsTableHTML}
+                </div>
+            `;
+        }
+        
+        // Get grade based on score
+        function getGrade(score) {
+            const numScore = parseFloat(score) || 0;
+            if (numScore >= 90) return 'ممتاز';
+            if (numScore >= 80) return 'جيد جداً';
+            if (numScore >= 70) return 'جيد';
+            if (numScore >= 60) return 'مقبول';
+            if (numScore >= 50) return 'مقبول';
+            return 'ضعيف';
+        }
+        
+        // Get evaluation based on GPA
+        function getEvaluation(gpa) {
+            const numGpa = parseFloat(gpa) || 0;
+            if (numGpa >= 85) return 'ممتاز';
+            if (numGpa >= 75) return 'جيد جداً';
+            if (numGpa >= 65) return 'جيد';
+            if (numGpa >= 50) return 'مقبول';
+            return 'ضعيف';
+        }
+        
+        // Initialize
+        window.onload = function() {
+            console.log('🎓 Student Search Page Loaded');
+            
+            // Check for URL parameters first
+            checkURLParameters();
+            
+            // Auto-load students from localStorage
+            loadStudentsFromStorage();
+        };
+        
+        // Check URL parameters for data
+        function checkURLParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentsData = urlParams.get('students');
+            
+            if (studentsData) {
+                try {
+                    const decodedData = decodeURIComponent(studentsData);
+                    const parsedData = JSON.parse(decodedData);
+                    
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        students = parsedData;
+                        console.log('✅ Loaded students from URL parameters:', students.length);
+                        
+                        // Save to storage
+                        localStorage.setItem('students', JSON.stringify(students));
+                        sessionStorage.setItem('students', JSON.stringify(students));
+                        
+                        if (students.length > 0 && students[0].subjects) {
+                            analyzeStudentStructure(students[0]);
+                        }
+                        
+                        // Show success message
+                        const resultsDiv = document.getElementById('searchResults');
+                        resultsDiv.innerHTML = `
+                            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center;">
+                                <h4 style="color: #155724; margin-bottom: 10px;">✅ تم تحميل البيانات من الرابط!</h4>
+                                <p style="color: #155724;">عدد الطلاب: ${students.length}</p>
+                                <p style="color: #155724; font-size: 14px;">يمكنك الآن البحث عن الطلاب</p>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('❌ Error parsing URL parameters:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
